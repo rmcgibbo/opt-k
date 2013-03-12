@@ -1,7 +1,7 @@
 This file was automatically generated from latex using pandoc
 
 Likelihood framework for choosing the optimal number of states in a
-Markov State Model 
+Markov State Model
 
 Overview
 ========
