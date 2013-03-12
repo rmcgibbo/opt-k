@@ -8,11 +8,11 @@ Overview
 
 A significant challenge in the automated construction of markov state
 models is choosing the number of microstates. The number of microstates,
-$k$ governs a bias-variance tradeoff – when $k$ is large, the models
-have a lot of parameters enabling it to fit the data with low bias, but
+![equation](http://latex.codecogs.com/gif.latex?k governs a bias-variance tradeoff – when http://latex.codecogs.com/gif.latex?k is large, the models
+)have a lot of parameters enabling it to fit the data with low bias, but
 the simultaneous estimation of these parameters from finite data can
-lead to high variance. On the other hand, when $k$ is small, we have
-fewer parameters and better statistics, but at the expense of model
+![equation](lead to high variance. On the other hand, when http://latex.codecogs.com/gif.latex?k is small, we have
+)fewer parameters and better statistics, but at the expense of model
 flexibility.
 
 Currently, most MSM construction pipelines involve manually selecting
@@ -30,16 +30,16 @@ parameters, the entries of the transition matrix. However, as we vary
 the number of states, it is not permissible to simply compare these
 likelihoods to select an optimal number of states. Doing so, we would
 always chose the trivial model, with only one state, as the transition
-probability in that model would be $1$ and thus the likelihood of any
-trajectory within that state space would be $1$.
-
+![equation](probability in that model would be http://latex.codecogs.com/gif.latex?1 and thus the likelihood of any
+)![equation](trajectory within that state space would be http://latex.codecogs.com/gif.latex?1.
+)
 The proper likelihood is not of the trajectory within the discrete state
 space; instead it’s the likelihood of the trajectory within the
 continuous phase space, on which the discrete states are merely an
 indicator function basis.
 
-`P[x(t)] dx^N = O_{s=0}(x_0) \prod_{i=0}^{N-1} T(x_i \rightarrow x_{i+1}) \cdot O_{s=i}(x_i)`
-
+![equation](http://latex.codecogs.com/gif.latex?P%5Bx%28t%29%5D%20dx%5EN%20%3D%20O_%7Bs%3D0%7D%28x_0%29%20%5Cprod_%7Bi%3D0%7D%5E%7BN-1%7D%20T%28x_i%20%5Crightarrow%20x_%7Bi%2B1%7D%29%20%5Ccdot%20O_%7Bs%3Di%7D%28x_i%29
+)
 With a discrete, non-overlapping state space, the likelihood of the
 trajectory can be decomposed into a product over the trajectory of two
 types of terms: the state to state transition probabilities and the
@@ -70,11 +70,11 @@ estimated eigenfunctions, but not the eigenvectors.)
 Therefore, the most appropriate emmision distribution for discrete state
 MSMs is that of the uniform distribution over the phase-space volume of
 the state. That is, the likelihood of observing a conformation in phase
-space given that the conformation is assigned to state $i$ is $0$ if the
-conformation is outside of the bounding volume of the state and constant
+![equation](space given that the conformation is assigned to state http://latex.codecogs.com/gif.latex?i is http://latex.codecogs.com/gif.latex?i if the
+)conformation is outside of the bounding volume of the state and constant
 if the conformation is within the volume. The constant is set so that
-the distribution integrates to $1$, and is thus the reciprocal volume of
-the microstate.
+![equation](the distribution integrates to http://latex.codecogs.com/gif.latex?1, and is thus the reciprocal volume of
+)the microstate.
 
 Algorithm
 =========

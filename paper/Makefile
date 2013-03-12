@@ -1,11 +1,11 @@
-all: latex markdown
+all: paper.pdf README.md
 
-latex: paper.tex
+paper.pdf: paper.tex
 	pdflatex paper.tex
 	bibtex paper
 	pdflatex paper.tex
 
-markdown: paper.tex
+README.md: paper.tex postprocess_markdown.py
 	pandoc --to=markdown -o README.md.tmp paper.tex
 	python postprocess_markdown.py README.md.tmp > README.md
 	rm README.md.tmp
