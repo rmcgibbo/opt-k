@@ -17,8 +17,10 @@ for line in f.readlines():
     if m1:
         #print >> sys.stderr, m1.group(1)
         query = urllib.quote(m1.group(1))
-        line = '![equation](' + inline_math.sub(base_url + query, line) + ')'
+        repl = '![equation](%s)' % (base_url + query)
+        line =  inline_math.sub(repl, line)
         
+        print >> sys.stderr, line
     #line = string.replace(line, '$$', '`')
     #line = string.replace(line, '$', '`')
     
