@@ -7,11 +7,11 @@ State Model
 Overview
 --------
 A significant challenge in the automated construction of markov state models
-is choosing the number of microstates. The number of microstates, $k$ governs
-a bias-variance tradeoff -- when $k$ is large, the models have a lot of
+is choosing the number of microstates. The number of microstates, `k` governs
+a bias-variance tradeoff -- when `k` is large, the models have a lot of
 parameters enabling it to fit the data with low bias, but the simultaneous
 estimation of these parameters from finite data can lead to high variance.
-On the other hand, when $k$ is small, we have fewer parameters and better
+On the other hand, when `k` is small, we have fewer parameters and better
 statistics, but at the expense of model flexibility.
 
 Currently, most MSM construction pipelines involve manually selecting the
@@ -28,8 +28,8 @@ probabilities are our main central parameters, the entries of the transition
 matrix. However, as we vary the number of states, it is not permissible to
 simply compare these likelihoods to select an optimal number of states. Doing
 so, we would always chose the trivial model, with only one state, as the
-transition probability in that model would be 1 and thus the likelihood of
-any trajectory within that state space would be 1.
+transition probability in that model would be `1` and thus the likelihood of
+any trajectory within that state space would be `1`.
 
 The proper likelihood is not of the trajectory within the discrete state
 space; instead it's the likelihood of the trajectory within the continuous
@@ -65,7 +65,7 @@ the eigenvectors.)
 Therefore, the most appropriate emmision distribution for discrete state MSMs
 is that of the uniform distribution over the phase-space volume of the state.
 That is, the likelihood of observing a conformation in phase space given that
-the conformation is assigned to state `i` is 0 if the conformation is outside
+the conformation is assigned to state `i` is `0` if the conformation is outside
 of the bounding volume of the state and constant if the conformation is within
 the volume. The constant is set so that the distribution integrates to 1, and
 is thus the reciprocal volume of the microstate.
