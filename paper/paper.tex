@@ -54,10 +54,8 @@ continuous phase space, on which the discrete states are merely an
 indicator function basis. 
 
 $$ 
-P[x_t] dx^N = \prod_{i=0}^{N-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^{N} p(x_{i} | \sigma(x_{i}))
+P[x_{0...T-1}] dx^N = \prod_{i=0}^{T-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^{N} p(x_{i} | \sigma(x_{i}))
 $$
-%% CRS: I think this is a better way of writing the likelihood
-%% This is essentially what Liz Kellogg wrote in her likelihood.
 
 With a discrete, non-overlapping state space, the likelihood of the
 trajectory can be decomposed into a product over the trajectory of two
@@ -135,7 +133,12 @@ the center it is closest to. As the number of randomly sampled points
 goes to infinity, the fraction of the points assigned to each state
 converges to being proportional to the state's volume.
 
-This algorithm is highly amenable to parallel computation.
+This algorithm is highly amenable to parallel computation. For a euclidean
+distance metric, the assignment can be sped up by using a BallTree data
+structure for fast neighbor search. (We can probably actually use this
+data structure within msmbuilder's assign step...)
+
+The documentation for the sklearn cython BallTree is given here \url{http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.BallTree.html#sklearn.neighbors.BallTree}
 
 \section{Choosing the Optimal Number of States}
 

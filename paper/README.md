@@ -38,14 +38,14 @@ space; instead it’s the likelihood of the trajectory within the
 continuous phase space, on which the discrete states are merely an
 indicator function basis.
 
-![equation](http://latex.codecogs.com/gif.latex?P%5Bx%28t%29%5D%20dx%5EN%20%3D%20O_%7Bs%3D0%7D%28x_0%29%20%5Cprod_%7Bi%3D0%7D%5E%7BN-1%7D%20T%28x_i%20%5Crightarrow%20x_%7Bi%2B1%7D%29%20%5Ccdot%20O_%7Bs%3Di%7D%28x_i%29)
+![equation](http://latex.codecogs.com/gif.latex?P%5Bx_%7B0...T-1%7D%5D%20dx%5EN%20%3D%20%5Cprod_%7Bi%3D0%7D%5E%7BT-1%7D%20T%28x_i%20%5Crightarrow%20x_%7Bi%2B1%7D%29%20%5Ccdot%20%5Cprod_%7Bi%3D0%7D%5E%7BN%7D%20p%28x_%7Bi%7D%20%7C%20%5Csigma%28x_%7Bi%7D%29%29)
 
 With a discrete, non-overlapping state space, the likelihood of the
 trajectory can be decomposed into a product over the trajectory of two
 types of terms: the state to state transition probabilities and the
 “emission” probabilities of each state, the probability of observing a
 conformation at a given location in phase space given that the
-conformation is within a certain state.
+conformation (![equation](http://latex.codecogs.com/gif.latex?x_t)) is within a certain state (![equation](http://latex.codecogs.com/gif.latex?%5Csigma%28x_t%29)).
 
 Emission Distributions
 ======================
@@ -111,7 +111,13 @@ is closest to. As the number of randomly sampled points goes to
 infinity, the fraction of the points assigned to each state converges to
 being proportional to the state’s volume.
 
-This algorithm is highly amenable to parallel computation.
+This algorithm is highly amenable to parallel computation. For a
+euclidean distance metric, the assignment can be sped up by using a
+BallTree data structure for fast neighbor search. (We can probably
+actually use this data structure within msmbuilder’s assign step...)
+
+The documentation for the sklearn cython BallTree is given here
+<http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.BallTree.html#sklearn.neighbors.BallTree>
 
 Choosing the Optimal Number of States
 =====================================
