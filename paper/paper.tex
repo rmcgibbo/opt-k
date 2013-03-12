@@ -117,7 +117,7 @@ spherical gaussian?).
 
 Now, we sample random points from the uniform distribution over the
 bounding box. We check these points against all of the gaussian PDFs. If
-the point is farther than $3-\sigma$ away from every cluster
+the point is farther than $3\sigma$ away from every cluster
 center, we reject it, reasoning that it is probably outside the convex
 hull. The remaining points are now a representation of the uniform
 distribution over the convex hull of phase space. For each point, we
