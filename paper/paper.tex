@@ -94,6 +94,13 @@ constant if the conformation is within the volume. The constant is set
 so that the distribution integrates to $1$, and is thus the reciprocal
 volume of the microstate.
 
+\begin{align*}
+p(x | s) &= C \\
+\int p(x | s) dx &= 1 \\
+\int C \mathbb{1}_s dx &= 1 \\
+C &= \frac{1}{\int \mathbb{1}_s dx}
+\end{align*}
+
 \section{Algorithm}
 
 To use this uniform distribution emission model, computationally, we
