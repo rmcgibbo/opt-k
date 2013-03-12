@@ -45,8 +45,8 @@ parameters, the entries of the transition matrix. However, as we vary
 the number of states, it is not permissible to simply compare these
 likelihoods to select an optimal number of states. Doing so, we would
 always chose the trivial model, with only one state, as the transition
-probability in that model would be 1 and thus the likelihood of any
-trajectory within that state space would be 1.
+probability in that model would be $1$ and thus the likelihood of any
+trajectory within that state space would be $1$.
 
 The proper likelihood is not of the trajectory within the discrete state
 space; instead it's the likelihood of the trajectory within the
@@ -86,10 +86,10 @@ estimated eigenfunctions, but not the eigenvectors.)
 Therefore, the most appropriate emmision distribution for discrete state
 MSMs is that of the uniform distribution over the phase-space volume of
 the state. That is, the likelihood of observing a conformation in phase
-space given that the conformation is assigned to state \texttt{i} is 0
+space given that the conformation is assigned to state $i$ is $0$
 if the conformation is outside of the bounding volume of the state and
 constant if the conformation is within the volume. The constant is set
-so that the distribution integrates to 1, and is thus the reciprocal
+so that the distribution integrates to $1$, and is thus the reciprocal
 volume of the microstate.
 
 \section{Algorithm}
@@ -97,7 +97,7 @@ volume of the microstate.
 To use this uniform distribution emission model, computationally, we
 need to compute the volume of our MSM states, which are high-dimensional
 Voronoi cells. While trivial in two or three dimensions, this
-computational geometry task\\becomes challenging in large dimensional
+computational geometry task becomes challenging in large dimensional
 settings.
 
 One challenge is how to model the volume of states which are at the
