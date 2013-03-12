@@ -1,0 +1,4 @@
+- Install LaTeX
+- Install the Pandoc converter, http://johnmacfarlane.net/pandoc/installing.html
+
+- Run `make` to compile the latex and the github markdown version
