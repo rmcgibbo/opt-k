@@ -111,7 +111,13 @@ is closest to. As the number of randomly sampled points goes to
 infinity, the fraction of the points assigned to each state converges to
 being proportional to the state’s volume.
 
-This algorithm is highly amenable to parallel computation.
+This algorithm is highly amenable to parallel computation. For a
+euclidean distance metric, the assignment can be sped up by using a
+BallTree data structure for fast neighbor search. (We can probably
+actually use this data structure within msmbuilder’s assign step...)
+
+The documentation for the sklearn cython BallTree is given here
+<http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.BallTree.html#sklearn.neighbors.BallTree>
 
 Choosing the Optimal Number of States
 =====================================
