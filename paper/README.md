@@ -3,6 +3,8 @@ This file was automatically generated from latex using pandoc
 Likelihood framework for choosing the optimal number of states in a
 Markov State Model
 
+Hello World
+
 Overview
 ========
 
@@ -14,8 +16,6 @@ the simultaneous estimation of these parameters from finite data can
 lead to high variance. On the other hand, when ![equation](http://latex.codecogs.com/gif.latex?k) is small, we have
 fewer parameters and better statistics, but at the expense of model
 flexibility.
-
-New stuff added!
 
 Currently, most MSM construction pipelines involve manually selecting
 the number of states. This is done primarily by human intuition, and is
