@@ -70,7 +70,7 @@ estimated eigenfunctions, but not the eigenvectors.)
 Therefore, the most appropriate emmision distribution for discrete state
 MSMs is that of the uniform distribution over the phase-space volume of
 the state. That is, the likelihood of observing a conformation in phase
-space given that the conformation is assigned to state ![equation](http://latex.codecogs.com/gif.latex?i) is ![equation](http://latex.codecogs.com/gif.latex?i) if the
+space given that the conformation is assigned to state ![equation](http://latex.codecogs.com/gif.latex?i) is ![equation](http://latex.codecogs.com/gif.latex?0) if the
 conformation is outside of the bounding volume of the state and constant
 if the conformation is within the volume. The constant is set so that
 the distribution integrates to ![equation](http://latex.codecogs.com/gif.latex?1), and is thus the reciprocal volume of
