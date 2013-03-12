@@ -51,18 +51,20 @@ trajectory within that state space would be $1$.
 The proper likelihood is not of the trajectory within the discrete state
 space; instead it's the likelihood of the trajectory within the
 continuous phase space, on which the discrete states are merely an
-indicator function basis.
+indicator function basis. 
 
+$$ 
+P[x_t] dx^N = \prod_{i=0}^{N-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^{N} p(x_{i} | \sigma(x_{i}))
 $$
-P[x(t)] dx^N = O_{s=0}(x_0) \prod_{i=0}^{N-1} T(x_i \rightarrow x_{i+1}) \cdot O_{s=i}(x_i)
-$$
+%% CRS: I think this is a better way of writing the likelihood
+%% This is essentially what Liz Kellogg wrote in her likelihood.
 
 With a discrete, non-overlapping state space, the likelihood of the
 trajectory can be decomposed into a product over the trajectory of two
 types of terms: the state to state transition probabilities and the
 ``emission'' probabilities of each state, the probability of observing a
 conformation at a given location in phase space given that the
-conformation is within a certain state.
+conformation ($x_t$) is within a certain state ($\sigma(x_t)$).
 
 \section{Emission Distributions}
 
