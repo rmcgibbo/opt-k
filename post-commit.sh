@@ -7,4 +7,3 @@ if [ -a .commit ]
     git add README.md
     git commit --ammend -C HEAD --no-verify
 fi
-exit
