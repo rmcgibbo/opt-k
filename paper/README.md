@@ -15,6 +15,8 @@ lead to high variance. On the other hand, when ![equation](http://latex.codecogs
 fewer parameters and better statistics, but at the expense of model
 flexibility.
 
+New stuff added!
+
 Currently, most MSM construction pipelines involve manually selecting
 the number of states. This is done primarily by human intuition, and is
 a significant bottleneck.
