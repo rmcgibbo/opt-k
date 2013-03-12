@@ -119,3 +119,7 @@ Choosing the Optimal Number of States
 Choose both the clustering algorithm (k-centers, k-means, etc) and the
 number of states by maximizing the BIC score of the model, using this
 likelihood.
+
+Unfortunately, this doesn't really help with picking the projection operator
+to vectorize the conformations (e.g. dihedrals, contact maps, etc). Also,
+it's not going to work with RMSD.
