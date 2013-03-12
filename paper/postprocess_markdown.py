@@ -6,26 +6,19 @@ import urllib
 msg = "This file was automatically generated from latex using pandoc\n\n"
 
 sys.stdout.write(msg)
-inline_math = re.compile('[$]+([^$]*)[$]+')
 
-base_url = 'http://latex.codecogs.com/gif.latex?'
+# match inline math or displayed math
+math_re = re.compile('[$]+([^$]*)[$]+')
+
+base_url = 'http://latex.codecogs.com/gif.latex'
 
 f = open(sys.argv[1])
 for line in f.readlines():
-    # replace with backticks
-    m1 = inline_math.search(line)
+    m1 = math_re.search(line)
     if m1:
-        #print >> sys.stderr, m1.group(1)
+        # replace latex with a url that renders the math
         query = urllib.quote(m1.group(1))
-        repl = '![equation](%s)' % (base_url + query)
-        line =  inline_math.sub(repl, line)
-        
-        print >> sys.stderr, line
-    #line = string.replace(line, '$$', '`')
-    #line = string.replace(line, '$', '`')
-    
-    #![equation](http://latex.codecogs.com/gif.latex?1%2Bsin%28mc%5E2%29%0D%0A)
-
-    
+        repl = '![equation](%s)' % (base_url + '?' + query)
+        line =  math_re.sub(repl, line)
     
     sys.stdout.write(line)
