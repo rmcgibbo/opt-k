@@ -68,3 +68,6 @@ nosetests.xml
 *.vrb
 *.xdy
 *.tdo
+
+paperNotes.bib
+paper.pdf
