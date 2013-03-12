@@ -1,0 +1,5 @@
+
+In order to use these libraries and scripts do this:
+
+export PYTHONPATH=$PYTHONPATH:<Install Path>/lib
+export PATH=$PATH:<Install Path>/scripts
