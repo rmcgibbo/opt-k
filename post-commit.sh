@@ -5,5 +5,5 @@ then
     rm "$(git rev-parse --show-toplevel)/.commit"
     git add paper/README.md
     git commit --amend -C HEAD --no-verify
-    echo "post commit hook"
+    echo "Adding new README.md"
 fi
