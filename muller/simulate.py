@@ -1,7 +1,6 @@
 import random
 from mullermsm import muller
 mullerforce = muller.muller_force()
-from sklearn import mixture
 import scipy.linalg
 from matplotlib.pyplot import *
 from argparse import ArgumentParser

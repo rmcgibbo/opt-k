@@ -36,8 +36,12 @@ class MonteCarlo(VolumeEstimator):
         self.num_points = int(num_points)
         self.cushion = float(cushion)
 
-        self.space_generators = space_metrics
+        self.space_generators = space_generators
         self.prep_space_generators = self.metric.prepare_trajectory(self.space_generators)
+
+        self.mins = np.min(self.prep_space_generators, axis=0) - self.cushion
+        self.maxs = np.max(self.prep_space_generators, axis=0) + self.cushion
+        self.lengths = self.maxs - self.mins
 
     def get_state_volumes(self, which_states=None):
         """
@@ -58,9 +62,10 @@ class MonteCarlo(VolumeEstimator):
     
         state_counts = np.zeros(len(self.prep_generators))
 
-        while state_counts.sum() < num_points:
+        while state_counts.sum() < self.num_points:
         # It might be more efficient to write this vectorially, but I don't 
         # want to run out of memory
+            print state_counts.sum()
             random_sample = np.random.random(self.dimension)
             random_sample = random_sample * self.lengths + self.mins
             random_sample = random_sample.reshape((1, -1))
@@ -74,9 +79,8 @@ class MonteCarlo(VolumeEstimator):
 
             state_counts[np.argmin(state_dists)] += 1
 
-        points_per_state = state_counts.astype(float) / self.num_points
-
-        volumes = points_per_state * self.total_volume
+        volumes = state_counts.astype(float) / self.num_points
+        # volumes are just percentages of the total space
 
         return volumes
         

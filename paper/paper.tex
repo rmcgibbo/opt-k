@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 
 \usepackage{amsmath}    % need for subequations
+\usepackage{amssymb}    % for symbols
 \usepackage{graphicx}   % need for figures
 \usepackage{verbatim}   % useful for program listings
 \usepackage{color}      % use if color is used in text
@@ -54,7 +55,7 @@ continuous phase space, on which the discrete states are merely an
 indicator function basis. 
 
 $$ 
-P[x_{0...T-1}] dx^N = \prod_{i=0}^{T-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^{N} p(x_{i} | \sigma(x_{i}))
+P[x_{0...T-1}] dx^N = \prod_{i=0}^{T-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^{T} p(x_{i} | \sigma(x_{i}))
 $$
 
 With a discrete, non-overlapping state space, the likelihood of the
@@ -92,12 +93,16 @@ constant if the conformation is within the volume. The constant is set
 so that the distribution integrates to $1$, and is thus the reciprocal
 volume of the microstate.
 
-\begin{align*}
-p(x | s) &= C \\
-\int p(x | s) dx &= 1 \\
-\int C \mathbb{1}_s dx &= 1 \\
-C &= \frac{1}{\int \mathbb{1}_s dx}
-\end{align*}
+% \begin{align*}
+% p(x | s) &= C \\
+% \int p(x | s) dx &= 1 \\
+% \int C \mathbf{1}_s dx &= 1 \\
+% C &= \frac{1}{\int \mathbf{1}_s dx}
+% \end{align*}
+
+$$ 
+P[x_{0...T-1}] dx^N = \prod_{i=0}^{T-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^T \frac{1}{V_{\sigma(x_{i})}}
+$$
 
 \section{Algorithm}
 
@@ -105,22 +110,37 @@ To use this uniform distribution emission model, computationally, we
 need to compute the volume of our MSM states, which are high-dimensional
 Voronoi cells. While trivial in two or three dimensions, this
 computational geometry task becomes challenging in large dimensional
-settings.
+settings. The computation of high dimensional volumes has occupied significant
+attention in recent years in the computational geometry literature, especially
+via randomized algorithms. [See issue \#1 on the github]
 
 One challenge is how to model the volume of states which are at the
 ``edge'' of the model. Is the volume of these states infinite, extending
 all the way out to infinity in some direction? This seems problematic.
 Instead, it seems appropriate to assert that the volume is bounded by
-the convex hull of the data. That is, the volume of a state is defined
+the convex hull of the data. That is, the volume of a state might be defined
 as the volume of the intersection of its Voronoi cell and the convex
-hell of the dataset.
+hull of the dataset.
 
-Computing both N-dimensional Voronoi volumes and convex hulls is
-difficult too. We adopt the following approximate algorithm. First, we
-compute the axis-aligned bounding box of all of the conformations. Next,
-we fit a multi-dimensional gaussian to the coordinates of each state.
-(We should probably use a diagonal covariance matrix, or even a
-spherical gaussian?).
+Instead, we use a slightly modified version of this definition that adopts
+the same spirit. Instead of taking the outer bounding region to be the convex
+hull of the data, we take it to be the set of all trail points such that the nearest neighbor of the trial point within the dataset is less than a certain
+cutoff, $R$. This can be computed relatively efficiently using a BallTree data
+structure. For further efficiency, we might use only a random subsample of the
+dataset for this nearest neighbor computation.
+
+Instead of computing the volume of the Voronoi cells explicitly, we instead
+compute the ratio of volume of each Voronoi cell to the volume of the entire
+bounding region. Because the bounding region's volume is independent of the clustering parameters, its inclusion changes all of the calculated likelihoods by a constant multiplicative factor, and can thus be discarded from the perspective of model comparison.
+
+To compute the fractional volumes of the Voronoi cells, we use the following randomized algorithm. First, we generate points inside of the bounding region using the lazy walker markov chain monte carlo algorithm.
+
+% Computing both N-dimensional Voronoi volumes and convex hulls is
+% difficult too. We adopt the following approximate algorithm. First, we
+% compute the axis-aligned bounding box of all of the conformations. Next,
+% we fit a multi-dimensional gaussian to the coordinates of each state.
+% (We should probably use a diagonal covariance matrix, or even a
+% spherical gaussian?).
 
 Now, we sample random points from the uniform distribution over the
 bounding box. We check these points against all of the gaussian PDFs. If

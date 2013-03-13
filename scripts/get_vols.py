@@ -27,21 +27,39 @@ class DihedralWrap(metrics.Vectorized):
         print 'hi'
         return arcC
 
+class Euclidean(metrics.Vectorized):
+    def prepare_trajectory(self, traj):
+        return traj
+
 parser = arglib.ArgumentParser(get_metric=True)
 
 parser.add_argument('generators', help='Generators filename')
+parser.add_argument('space_gens', help='Generators to use to define the whole space')
+parser.add_argument('cushion', type=float, help='Cushion to require points be within a generator to include it as a random sample.')
 parser.add_argument('output', help='output filename to save volumes.')
 parser.add_argument('num_points', help='Number of points to sample.')
 parser.add_argument('use_dih', action='store_true', default=False)
+parser.add_argument('use_euc', action='store_true', default=False)
 
 args, metric = parser.parse_args()
 
-if args.use_dih:
+if args.use_euc:
+    metric = Euclidean()
+elif args.use_dih:
     metric = DihedralWrap(dih_metric=copy.deepcopy(metric))
 
-gens = Trajectory.load_from_lhdf(args.generators)
+try: 
+    gens = np.load(args.generators)
+except: 
+    gens = Trajectory.load_from_lhdf(args.generators)
 
-MC = MonteCarlo(metric, gens, num_points=args.num_points)
+try:
+    space_gens = np.load(args.space_gens)
+except:
+    space_gens = Trajectory.load_from_lhdf(args.space_gens)
+
+MC = MonteCarlo(metric, gens, space_gens, num_points=args.num_points, 
+        cushion=args.cushion)
 
 volumes = MC.get_state_volumes()
 
