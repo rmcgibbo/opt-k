@@ -2,6 +2,8 @@
 This library is used to compute the volume of states.
 """
 
+from msmbuilder import metrics
+
 class VolumeEstimator(object):
     """
     This base class can be subclassed by implementations that use an algorithm
@@ -11,18 +13,18 @@ class VolumeEstimator(object):
     a list of volumes
     """
     def __init__(self, metric, generators):
-    """
-    Parameters
-    ----------
-    metric : msmbuilder.metric.Vectorized instance or subclass instance
-        distance metric to use to calculate distances between points. This
-        needs to be a Vectorized type because we assume that phase space is
-        euclidean
-    generators : msmbuilder.Trajectory instance
-        each state is defined by the voronoi cell defined by the generators
-    """
+        """
+        Parameters
+        ----------
+        metric : msmbuilder.metric.Vectorized instance or subclass instance
+            distance metric to use to calculate distances between points. This
+            needs to be a Vectorized type because we assume that phase space is
+            euclidean
+        generators : msmbuilder.Trajectory instance
+            each state is defined by the voronoi cell defined by the generators
+        """
 
-        if not isinstance(metric, msmbuilder.metrics.Vectorized):
+        if not isinstance(metric, metrics.Vectorized):
             raise Exception("Metric must be a subclass of msmbuilder.metrics.Vectorized")
 
         self.metric = metric
@@ -32,18 +34,18 @@ class VolumeEstimator(object):
         self.dimension = self.prep_generators.shape[1]
     
     def get_state_volumes(self, which_states=None):
-    """
-    Parameters
-    ----------
-    which_states : np.ndarray, optional
-        Calculate volumes only for requested states. If None given, then 
-        get volume for each state
+        """
+        Parameters
+        ----------
+        which_states : np.ndarray, optional
+            Calculate volumes only for requested states. If None given, then 
+            get volume for each state
     
-    Returns
-    -------
-    volumes : np.ndarray
-        volume for each state in same units as metric.prepare_trajectory 
-    """
+        Returns
+        -------
+        volumes : np.ndarray
+            volume for each state in same units as metric.prepare_trajectory 
+        """
 
         if which_states is None:
             which_states = np.arange(len(self.generators))
@@ -57,6 +59,6 @@ class VolumeEstimator(object):
         return volumes
     
     def _get_volume(state):
-    """Internal function to get the volume of a particular state.
-    """
+        """Internal function to get the volume of a particular state.
+        """
         raise NotImplementedError

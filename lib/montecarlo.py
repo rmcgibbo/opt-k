@@ -1,4 +1,6 @@
 
+from msmbuilder import metrics
+import numpy as np
 from volumes import VolumeEstimator
 
 class MonteCarlo(VolumeEstimator):
@@ -8,7 +10,8 @@ class MonteCarlo(VolumeEstimator):
     state.
     """
     
-    def __init__(self, *args, num_points=1E6, cushion=1.):
+    def __init__(self, metric, generators, space_generators=None,
+         num_points=1E6, cushion=1.):
         """
         Compute the volume of states by using a simple monte carlo algorithm.
 
@@ -19,23 +22,22 @@ class MonteCarlo(VolumeEstimator):
             that phase space is euclidean
         generators : msmbuilder.Trajectory
             generators that define the voronoi cells
+        space_generators : msmbuilder.Trajectory, optional
+            conformations that define the full space. If None, then generators
+            are used
         num_points : int, optional
             number of points to simulate to calculate the volumes
         cushion : float, optional
-            cushion to use to define the bounding box for the data. The box
-            will be defined based on a hyberrectangle with corners in each 
-            dimension equal to 
-                [min_d(generators) - cushion, max_d(generators) + cushion]
+            cushion to use to define full space of the data. A point is in
+            this space if it is within <cushion> of any of the space_generators
         """
-        super(self, MonteCarlo).__init__(*args)
+        super(MonteCarlo, self).__init__(metric, generators)
 
-        self.num_points = num_points
+        self.num_points = int(num_points)
+        self.cushion = float(cushion)
 
-        self.mins = self.prep_generators.min(axis=0) - cushion
-        self.maxs = self.prep_generators.max(axis=0) + cushion
-        self.lengths = self.maxs - self.mins
-        
-        self.total_volume = np.prod(self.lengths)
+        self.space_generators = space_metrics
+        self.prep_space_generators = self.metric.prepare_trajectory(self.space_generators)
 
     def get_state_volumes(self, which_states=None):
         """
@@ -56,12 +58,17 @@ class MonteCarlo(VolumeEstimator):
     
         state_counts = np.zeros(len(self.prep_generators))
 
-        for i in xrange(self.num_points):
+        while state_counts.sum() < num_points:
         # It might be more efficient to write this vectorially, but I don't 
         # want to run out of memory
             random_sample = np.random.random(self.dimension)
             random_sample = random_sample * self.lengths + self.mins
             random_sample = random_sample.reshape((1, -1))
+            
+            space_dists = self.metric.one_to_all(random_sample, self.prep_space_generators, 0)
+
+            if np.min(space_dists) > self.cushion:
+                continue
             
             state_dists = self.metric.one_to_all(random_sample, self.prep_generators, 0)
 
