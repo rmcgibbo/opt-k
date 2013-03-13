@@ -115,19 +115,11 @@ attention in recent years in the computational geometry literature, especially
 via randomized algorithms. [See issue \#1 on the github]
 
 One challenge is how to model the volume of states which are at the
-``edge'' of the model. Is the volume of these states infinite, extending
-all the way out to infinity in some direction? This seems problematic.
-Instead, it seems appropriate to assert that the volume is bounded by
-the convex hull of the data. That is, the volume of a state might be defined
-as the volume of the intersection of its Voronoi cell and the convex
-hull of the dataset.
+``edge'' of the model. Is the volume of these states unbounded, given that they extend all the way out to infinity in some direction? This would be problematic.
+It seems appropriate to assert that the volume of these edge states is bounded in some way by the extent of our dataset. For example, the volume of a state might be defined as the volume of the intersection of its Voronoi cell and the convex hull of the whole dataset.
 
-Instead, we use a slightly modified version of this definition that adopts
-the same spirit. Instead of taking the outer bounding region to be the convex
-hull of the data, we take it to be the set of all trail points such that the nearest neighbor of the trial point within the dataset is less than a certain
-cutoff, $R$. This can be computed relatively efficiently using a BallTree data
-structure. For further efficiency, we might use only a random subsample of the
-dataset for this nearest neighbor computation.
+We use a slightly modified version of this definition that adopts
+the same spirit. Instead of taking the outer bounding region to be the convex hull of the data, we take it to be the set of all trial points such that the nearest data point to the trial point is closer than a certain cutoff, $R$. This can be computed relatively efficiently using a BallTree data structure. For further efficiency, we might use only a random subsample of the dataset for this nearest neighbor computation.
 
 Instead of computing the volume of the Voronoi cells explicitly, we instead
 compute the ratio of volume of each Voronoi cell to the volume of the entire
