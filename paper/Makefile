@@ -1,6 +1,6 @@
 all: paper.pdf README.md
 
-paper.pdf: paper.tex
+paper.pdf: paper.tex bibliography.bib
 	pdflatex paper.tex
 	bibtex paper
 	pdflatex paper.tex

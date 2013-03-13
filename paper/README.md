@@ -116,35 +116,30 @@ thus be discarded from the perspective of model comparison.
 
 To compute the fractional volumes of the Voronoi cells, we use the
 following randomized algorithm. First, we generate points inside of the
-bounding region using the lazy walker markov chain monte carlo
-algorithm.
-
-Now, we sample random points from the uniform distribution over the
-bounding box. We check these points against all of the gaussian PDFs. If
-the point is farther than ![equation](http://latex.codecogs.com/gif.latex?3%5Csigma) away from every cluster center, we
-reject it, reasoning that it is probably outside the convex hull. The
-remaining points are now a representation of the uniform distribution
-over the convex hull of phase space. For each point, we compute its
-distance to each of the cluster centers, “assigning” it to the center it
-is closest to. As the number of randomly sampled points goes to
-infinity, the fraction of the points assigned to each state converges to
-being proportional to the state’s volume.
+bounding region using the lazy random walk Markov chain Monte Carlo
+algorithm.\cite{Kannan97} This random walk converges to sampling from
+the uniform distribution over the interior. After a sufficient burn in
+period, for each sampled point we compute its nearest MSM state center,
+assigning it to that state. As the number of randomly sampled points
+goes to infinity, the fraction of the points assigned to each state
+converges to being proportional to the state’s volume.
 
 This algorithm is highly amenable to parallel computation. For a
-euclidean distance metric, the assignment can be sped up by using a
-BallTree data structure for fast neighbor search. (We can probably
-actually use this data structure within msmbuilder’s assign step...)
-
-The documentation for the sklearn cython BallTree is given here
-<http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.BallTree.html#sklearn.neighbors.BallTree>
+euclidean distance metric, the assignment can be performed efficiently
+by using a BallTree data structure for fast neighbor search.
 
 Choosing the Optimal Number of States
 =====================================
 
-Choose both the clustering algorithm (k-centers, k-means, etc) and the
-number of states by maximizing the BIC score of the model, using this
-likelihood.
+We choose both the clustering algorithm (k-centers, k-means, etc) and
+the number of states by maximizing the BIC/AIC scores of the model,
+using this likelihood.
 
 Unfortunately, this doesn’t really help with picking the projection
 operator to vectorize the conformations (e.g. dihedrals, contact maps,
-etc). Also, it’s not going to work with RMSD.
+etc). Also, it’s not going to work rigorously with RMSD.
+
+Validation
+==========
+
+We being by using the procedure described above on the Müller potential.
