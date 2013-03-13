@@ -1,4 +1,6 @@
 
+from msmbuilder import metrics
+import numpy as np
 from volumes import VolumeEstimator
 
 class MonteCarlo(VolumeEstimator):
@@ -8,7 +10,7 @@ class MonteCarlo(VolumeEstimator):
     state.
     """
     
-    def __init__(self, *args, num_points=1E6, cushion=1.):
+    def __init__(self, metric, generators, num_points=1E6, cushion=1.):
         """
         Compute the volume of states by using a simple monte carlo algorithm.
 
@@ -27,9 +29,9 @@ class MonteCarlo(VolumeEstimator):
             dimension equal to 
                 [min_d(generators) - cushion, max_d(generators) + cushion]
         """
-        super(self, MonteCarlo).__init__(*args)
+        super(MonteCarlo, self).__init__(metric, generators)
 
-        self.num_points = num_points
+        self.num_points = int(num_points)
 
         self.mins = self.prep_generators.min(axis=0) - cushion
         self.maxs = self.prep_generators.max(axis=0) + cushion
