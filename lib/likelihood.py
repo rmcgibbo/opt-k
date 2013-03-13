@@ -4,7 +4,8 @@ This library is used to calculate the likelihood of a particular MSM.
 The likelihood takes as input the transition matrix as well as the volume
 of each state.
 """
-
+from msmbuilder import MSMLib
+import numpy as np
 
 def get_log_likelihood(tProb, trajs, volumes, lagtime=1):
     """
@@ -35,13 +36,16 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1):
         log-likelihood as defined above
     """
 
-    counts = msm_analysis.get_counts_from_assignments(trajs, lag_time=lagtime)
+    counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime)
 
+
+    tProb = tProb.tocsr()
+    counts.eliminate_zeros()
     state_counts = counts.sum(axis=1)
 
     ij = counts.nonzero()
 
-    log_like = np.sum(counts.data * np.log(tProb[ij])) - \
+    log_like = np.sum(np.array(counts.data) * np.array(np.log(tProb[ij]))) - \
         np.sum(state_counts * np.log(volumes))
     
     return log_like
