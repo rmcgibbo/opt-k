@@ -91,21 +91,21 @@ literature, especially via randomized algorithms. [See issue \#1 on the
 github]
 
 One challenge is how to model the volume of states which are at the
-“edge” of the model. Is the volume of these states infinite, extending
-all the way out to infinity in some direction? This seems problematic.
-Instead, it seems appropriate to assert that the volume is bounded by
-the convex hull of the data. That is, the volume of a state might be
-defined as the volume of the intersection of its Voronoi cell and the
-convex hull of the dataset.
+“edge” of the model. Is the volume of these states unbounded, given that
+they extend all the way out to infinity in some direction? This would be
+problematic. It seems appropriate to assert that the volume of these
+edge states is bounded in some way by the extent of our dataset. For
+example, the volume of a state might be defined as the volume of the
+intersection of its Voronoi cell and the convex hull of the whole
+dataset.
 
-Instead, we use a slightly modified version of this definition that
-adopts the same spirit. Instead of taking the outer bounding region to
-be the convex hull of the data, we take it to be the set of all trail
-points such that the nearest neighbor of the trial point within the
-dataset is less than a certain cutoff, ![equation](http://latex.codecogs.com/gif.latex?R). This can be computed
-relatively efficiently using a BallTree data structure. For further
-efficiency, we might use only a random subsample of the dataset for this
-nearest neighbor computation.
+We use a slightly modified version of this definition that adopts the
+same spirit. Instead of taking the outer bounding region to be the
+convex hull of the data, we take it to be the set of all trial points
+such that the nearest data point to the trial point is closer than a
+certain cutoff, ![equation](http://latex.codecogs.com/gif.latex?R). This can be computed relatively efficiently using a
+BallTree data structure. For further efficiency, we might use only a
+random subsample of the dataset for this nearest neighbor computation.
 
 Instead of computing the volume of the Voronoi cells explicitly, we
 instead compute the ratio of volume of each Voronoi cell to the volume
@@ -116,35 +116,30 @@ thus be discarded from the perspective of model comparison.
 
 To compute the fractional volumes of the Voronoi cells, we use the
 following randomized algorithm. First, we generate points inside of the
-bounding region using the lazy walker markov chain monte carlo
-algorithm.
-
-Now, we sample random points from the uniform distribution over the
-bounding box. We check these points against all of the gaussian PDFs. If
-the point is farther than ![equation](http://latex.codecogs.com/gif.latex?3%5Csigma) away from every cluster center, we
-reject it, reasoning that it is probably outside the convex hull. The
-remaining points are now a representation of the uniform distribution
-over the convex hull of phase space. For each point, we compute its
-distance to each of the cluster centers, “assigning” it to the center it
-is closest to. As the number of randomly sampled points goes to
-infinity, the fraction of the points assigned to each state converges to
-being proportional to the state’s volume.
+bounding region using the lazy random walk Markov chain Monte Carlo
+algorithm.\cite{Kannan97} This random walk converges to sampling from
+the uniform distribution over the interior. After a sufficient burn in
+period, for each sampled point we compute its nearest MSM state center,
+assigning it to that state. As the number of randomly sampled points
+goes to infinity, the fraction of the points assigned to each state
+converges to being proportional to the state’s volume.
 
 This algorithm is highly amenable to parallel computation. For a
-euclidean distance metric, the assignment can be sped up by using a
-BallTree data structure for fast neighbor search. (We can probably
-actually use this data structure within msmbuilder’s assign step...)
-
-The documentation for the sklearn cython BallTree is given here
-<http://scikit-learn.org/dev/modules/generated/sklearn.neighbors.BallTree.html#sklearn.neighbors.BallTree>
+euclidean distance metric, the assignment can be performed efficiently
+by using a BallTree data structure for fast neighbor search.
 
 Choosing the Optimal Number of States
 =====================================
 
-Choose both the clustering algorithm (k-centers, k-means, etc) and the
-number of states by maximizing the BIC score of the model, using this
-likelihood.
+We choose both the clustering algorithm (k-centers, k-means, etc) and
+the number of states by maximizing the BIC/AIC scores of the model,
+using this likelihood.
 
 Unfortunately, this doesn’t really help with picking the projection
 operator to vectorize the conformations (e.g. dihedrals, contact maps,
-etc). Also, it’s not going to work with RMSD.
+etc). Also, it’s not going to work rigorously with RMSD.
+
+Validation
+==========
+
+We being by using the procedure described above on the Müller potential.
