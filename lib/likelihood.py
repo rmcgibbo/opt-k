@@ -52,7 +52,10 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1):
     
     #log_like = np.sum(np.array(counts.data) * np.array(np.log(tProb[ij]))) - \
     #    np.sum(state_counts * np.log(volumes))
-    log_like = np.sum(nonzero_counts * np.log(nonzero_tprobs)) - \
-        np.sum(state_counts * np.log(volumes))
+    #log_like = np.sum(nonzero_counts * np.log(nonzero_tprobs)) - \
+    #    np.sum(state_counts * np.log(volumes))
 
-    return log_like
+    t_like = np.sum(nonzero_counts * np.log(nonzero_tprobs))
+    v_like = - np.sum(state_counts * np.log(volumes))
+
+    return t_like, v_like
