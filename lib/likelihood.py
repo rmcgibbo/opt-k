@@ -7,7 +7,7 @@ of each state.
 from msmbuilder import MSMLib
 import numpy as np
 
-def get_log_likelihood(tProb, trajs, volumes, lagtime=1):
+def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False):
     """
     Function to calculate the log likelihood according to:
 
@@ -58,4 +58,7 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1):
     t_like = np.sum(nonzero_counts * np.log(nonzero_tprobs))
     v_like = - np.sum(state_counts * np.log(volumes))
 
-    return t_like, v_like
+    if separate:
+        return t_like, v_like
+    
+    return t_like + v_like
