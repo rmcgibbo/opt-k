@@ -7,7 +7,7 @@ from scipy.io import mmread
 Ls = []
 Ls.append(0) # for a one state model the likelihood is 0
 
-for k in range(2, 101) + [ 1000 ]:
+for k in range(50,1050,50):
     print k
     t = mmread('k%d/Lag30/tProb.mtx' % k)
     v = np.load('k%d/vols.npy' % k)
@@ -15,4 +15,4 @@ for k in range(2, 101) + [ 1000 ]:
     a = a['arr_0']
     Ls.append(likelihood.get_log_likelihood(t, a, v, lagtime=30))
 
-np.save('likes.npy', np.array(Ls))
+np.save('likes1000_s50.npy', np.array(Ls))
