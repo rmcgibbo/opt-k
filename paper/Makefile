@@ -6,7 +6,7 @@ paper.pdf: paper.tex bibliography.bib
 	pdflatex paper.tex
 
 README.md: paper.tex postprocess_markdown.py
-	pandoc --to=markdown -o README.md.tmp paper.tex
+	pandoc --no-wrap --to=markdown -o README.md.tmp paper.tex
 	python postprocess_markdown.py README.md.tmp > README.md
 	rm README.md.tmp
 
