@@ -8,16 +8,16 @@ msg = "This file was automatically generated from latex using pandoc\n\n"
 
 sys.stdout.write(msg)
 
+base_url = 'http://latex.codecogs.com/gif.latex'
+github_url = "https://raw.github.com/rmcgibbo/opt-k/master/paper/"
+
 # match inline math or displayed math
 math_re = re.compile('[$]+([^$]*)[$]+')
 fig_re = re.compile('\((figs/\S*\.png)')
 label_re = re.compile(r'\\label{\S*}')
 fig_location_re = re.compile('\[[ch!]+\]')
 wierd_re = re.compile('\[fig:\S+\]')
-
-base_url = 'http://latex.codecogs.com/gif.latex'
-
-github_url = "https://raw.github.com/rmcgibbo/opt-k/master/paper/"
+caption_re = re.compile('!\[(.+)\]\(' + github_url)
 
 f = open(sys.argv[1])
 text = f.read()
@@ -25,6 +25,11 @@ counter = itertools.count()
 while True:
     print >> sys.stderr, counter.next()
     matched = False
+
+    m0 = caption_re.search(text)
+    if m0:
+        matched = True
+        text, _ = caption_re.subn('_' + m0.group(1) + '_\n' + '![](' + github_url, text)
 
     m0 = fig_location_re.search(text)
     if m0:
