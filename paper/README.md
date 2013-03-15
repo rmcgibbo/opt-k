@@ -38,7 +38,7 @@ space; instead it’s the likelihood of the trajectory within the
 continuous phase space, on which the discrete states are merely an
 indicator function basis.
 
-![equation](http://latex.codecogs.com/gif.latex?)\label{eq:like}
+![equation](http://latex.codecogs.com/gif.latex?)\
 P[x_{0...T-1}] dx^N = \prod_{i=0}^{T-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^{T} p(x_{i} | \sigma(x_{i}))![equation](http://latex.codecogs.com/gif.latex?)
 
 With a discrete, non-overlapping state space, the likelihood of the
@@ -77,7 +77,7 @@ if the conformation is within the volume. The constant is set so that
 the distribution integrates to ![equation](http://latex.codecogs.com/gif.latex?1), and is thus the reciprocal volume of
 the microstate.
 
-![equation](http://latex.codecogs.com/gif.latex?)\label{eq:like_vol}
+![equation](http://latex.codecogs.com/gif.latex?)\
 P[x_{0...T-1}] dx^N = \prod_{i=0}^{T-1} T(x_i \rightarrow x_{i+1}) \cdot \prod_{i=0}^T \frac{1}{V_{\sigma(x_{i})}}![equation](http://latex.codecogs.com/gif.latex?)
 
 Algorithm
@@ -184,7 +184,7 @@ mathematically rigorous with the introduction of functions like the
 Bayesian Information Content (BIC), which is defined in .
 
 ![equation](http://latex.codecogs.com/gif.latex?)BIC = -2 \log L + m \log(n) 
-\label{eq:bic}![equation](http://latex.codecogs.com/gif.latex?)
+\![equation](http://latex.codecogs.com/gif.latex?)
 
 Here, ![equation](http://latex.codecogs.com/gif.latex?L) denotes the likelihood of a model, while ![equation](http://latex.codecogs.com/gif.latex?m) is the number of
 parameters used in the model, and ![equation](http://latex.codecogs.com/gif.latex?n) is the number of data points.

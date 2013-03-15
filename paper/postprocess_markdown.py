@@ -10,6 +10,8 @@ sys.stdout.write(msg)
 # match inline math or displayed math
 math_re = re.compile('[$]+([^$]*)[$]+')
 fig_re = re.compile('(figs/\S*\.png)')
+label_re = re.compile('\\label{\S*}')
+
 base_url = 'http://latex.codecogs.com/gif.latex'
 
 github_url = "https://raw.github.com/rmcgibbo/opt-k/master/paper/"
@@ -20,6 +22,11 @@ for line in f.readlines():
     if m1:
         print >> sys.stderr, 'inside m1'
         line = fig_re.sub(github_url + m1.group(1), line)
+
+    m2 = label_re.search(line)
+    if m2:
+        line = label_re.sub('', line)
+        print >> sys.stderr, line
 
     while True:
         m1 = math_re.search(line)
