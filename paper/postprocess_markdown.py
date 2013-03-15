@@ -10,7 +10,7 @@ sys.stdout.write(msg)
 # match inline math or displayed math
 math_re = re.compile('[$]+([^$]*)[$]+')
 fig_re = re.compile('(figs/\S*\.png)')
-label_re = re.compile('[\]label{\S*}')
+label_re = re.compile(r'\\label{\S*}')
 
 base_url = 'http://latex.codecogs.com/gif.latex'
 
