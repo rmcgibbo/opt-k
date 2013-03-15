@@ -51,7 +51,7 @@ while True:
         matched = True
         # replace latex with a url that renders the math
         query = urllib.quote(m3.group(1))
-        repl = '![equation](%s)' % (base_url + '?' + query)
+        repl = '![](%s)' % (base_url + '?' + query)
         text, _ =  math_re.subn(repl, text, 1)
 
     if not matched:
