@@ -167,7 +167,7 @@ BIC = -2 \log L + m \log(n)
 We found that the BIC of the models built using K-Centers clustering has a minimum at $k=250$. This minimum is the ``optimal'' model according to the BIC of our likelihood. As a check of the usefulness of this minimum, we plotted the three slowest implied timescales in the models as a function of $k$. The optimal model was close to the point at which the implied timescales became constant. 
 
 \begin{figure}
-\includegraphics[width=2in]{figs/like_comp.pdf}
+\includegraphics[width=2in]{figs/like_comp.png}
 \caption{For models built between 50 and 1,000 states using the K-Centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states. Heuristically, at this point, adding another state does not add anything to the model. As a result, by using a criterion, like the BIC, that penalizes using additional parameters to fit the data, we can find an ``optimal'' model. Interestingly, the BIC optimal model occurs at 250 states, which also corresponds to where the three slowest timescales plateau.}
 \label{fig:like_kcenters}
 \end{figure}
