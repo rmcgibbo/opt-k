@@ -172,5 +172,18 @@ We found that the BIC of the models built using K-Centers clustering has a minim
 \label{fig:like_kcenters}
 \end{figure}
 
+\begin{figure*}
+\includegraphics[width=5in]{figs/kcent_vors.png}
+\caption{For K-Centers models, we observed a rapid increase in likelihood followed by a plateau. For models built with too few states, the states within the metastable wells are too large. By increasing the number of states, the resolution in increased, but using too many states leads to a model like the bottom right which is clearly over-fit and so has a non-optimal BIC despite having a higher likelihood.}
+\end{figure*}
+
+\begin{figure}
+\includegraphics[width=3in]{figs/cluster_comp.png}
+\caption{We also compared three clustering algorithms and used the likelihood function to determine which is best. The likelihood of the K-Means models was always larger than the other two. Additionally, the K-Means algorithm plateaued at a lower value of $k$, which corresponded to a minimum in the BIC curve at 200 states vs. the optimal models of 250 states in the K-Centers and Hybrid K-Medoids models.} \end{figure}
+
+\begin{figure}
+\includegraphics[width=2in]{figs/clust_vors.png}
+\caption{The likelihoods (and BIC's) of the three clustering algorithms predicted that the K-Means algorithm is the better clustering algorithm. The result of K-Means is many states clustered into the highest density areas of the potential. The Hybrid K-Medoids ends up somewhere in between the K-Centers model and the K-Means model. This is likely due to the implementation being an approximate algorithm that requires more iterations to converge to the best state decomposition.}
+\end{figure}
 \bibliography{bibliography}
 \end{document}
