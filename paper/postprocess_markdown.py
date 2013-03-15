@@ -23,7 +23,7 @@ f = open(sys.argv[1])
 text = f.read()
 counter = itertools.count()
 while True:
-    print >> sys.stderr, counter.next()
+    #print >> sys.stderr, counter.next()
     matched = False
 
     m0 = caption_re.search(text)
