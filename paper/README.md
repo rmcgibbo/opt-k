@@ -172,7 +172,7 @@ constant in all cases, the relative likelihoods are the same.
 
 [h!] ![The Müller potential consists of three metastable wells. We
 simulated Langevin dynamics on this potential as a validation of the new
-likelihood function.](figs/muller_pot.png "fig:") [fig:muller~p~ot]
+likelihood function.]https://raw.github.com/rmcgibbo/opt-k/master/paper/figs/muller_pot.png "fig:") [fig:muller~p~ot]
 
 We built an MSM using a fixed lag time for each state decomposition and
 then calculated the likelihood according to . These likelihoods
