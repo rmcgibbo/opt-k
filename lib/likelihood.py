@@ -7,7 +7,8 @@ of each state.
 from msmbuilder import MSMLib
 import numpy as np
 
-def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False):
+def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False, 
+    kellogg=False):
     """
     Function to calculate the log likelihood according to:
 
@@ -29,6 +30,10 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False):
         volume for each state in the msm
     lagtime : int
         lag time used to build the msm. Will subsample the trajs accordingly
+    separate : bool, optional
+        separate transition probability component from the volume component
+    kellogg : bool, optional
+        if true then use Kellogg's approximation
 
     Returns
     -------
@@ -56,7 +61,11 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False):
     #    np.sum(state_counts * np.log(volumes))
 
     t_like = np.sum(nonzero_counts * np.log(nonzero_tprobs))
-    v_like = - np.sum(state_counts * np.log(volumes))
+
+    if not kellogg:
+        v_like = - np.sum(state_counts * np.log(volumes))
+    else:
+        v_like = - np.sum(state_counts * np.log(state_counts))
 
     if separate:
         return t_like, v_like
