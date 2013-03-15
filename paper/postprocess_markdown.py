@@ -9,7 +9,7 @@ sys.stdout.write(msg)
 
 # match inline math or displayed math
 math_re = re.compile('[$]+([^$]*)[$]+')
-fig_re = re.compile('\((figs/\S*\.png)')
+fig_re = re.compile('(figs/\S*\.png)')
 base_url = 'http://latex.codecogs.com/gif.latex'
 
 github_url = "https://raw.github.com/rmcgibbo/opt-k/master/paper/"
