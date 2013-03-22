@@ -11,7 +11,7 @@ class MonteCarlo(VolumeEstimator):
     """
     
     def __init__(self, metric, generators, space_generators=None,
-         num_points=1E6, cushion=1.):
+         num_points=1E6, cushion=1., space_metric=None):
         """
         Compute the volume of states by using a simple monte carlo algorithm.
 
@@ -30,6 +30,9 @@ class MonteCarlo(VolumeEstimator):
         cushion : float, optional
             cushion to use to define full space of the data. A point is in
             this space if it is within <cushion> of any of the space_generators
+        space_metric : msmbuilder.metrics.Vectorized, optional
+            use this metric to compute distances to space_generators
+            if None, then use metric.
         """
         super(MonteCarlo, self).__init__(metric, generators)
 
@@ -37,7 +40,9 @@ class MonteCarlo(VolumeEstimator):
         self.cushion = float(cushion)
 
         self.space_generators = space_generators
-        self.prep_space_generators = self.metric.prepare_trajectory(self.space_generators)
+        if space_metric is None:
+            self.space_metric = self.metric
+        self.prep_space_generators = self.space_metric.prepare_trajectory(self.space_generators)
 
         self.mins = np.min(self.prep_space_generators, axis=0) - self.cushion
         self.maxs = np.max(self.prep_space_generators, axis=0) + self.cushion
@@ -70,7 +75,7 @@ class MonteCarlo(VolumeEstimator):
             random_sample = random_sample * self.lengths + self.mins
             random_sample = random_sample.reshape((1, -1))
             
-            space_dists = self.metric.one_to_all(random_sample, self.prep_space_generators, 0)
+            space_dists = self.space_metric.one_to_all(random_sample, self.prep_space_generators, 0)
 
             if np.min(space_dists) > self.cushion:
                 continue

@@ -40,6 +40,7 @@ parser.add_argument('output', help='output filename to save volumes.')
 parser.add_argument('num_points', help='Number of points to sample.')
 parser.add_argument('use_dih', action='store_true', default=False)
 parser.add_argument('use_euc', action='store_true', default=False)
+#parser.add_argument('space_metric', default=None, help='metric to use to define which points are in the whole space. None or pickled distance metric')
 
 args, metric = parser.parse_args()
 
@@ -57,9 +58,15 @@ try:
     space_gens = np.load(args.space_gens)
 except:
     space_gens = Trajectory.load_from_lhdf(args.space_gens)
+#
+#if not args.space_metric is None:
+#    space_metric = pickle.unpickle(args.space_metric)
+#else:
+#    space_metric = None
 
 MC = MonteCarlo(metric, gens, space_gens, num_points=args.num_points, 
         cushion=args.cushion)
+#, space_metric=space_metric)
 
 volumes = MC.get_state_volumes()
 
