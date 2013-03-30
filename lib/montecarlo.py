@@ -70,7 +70,6 @@ class MonteCarlo(VolumeEstimator):
         while state_counts.sum() < self.num_points:
         # It might be more efficient to write this vectorially, but I don't 
         # want to run out of memory
-            print state_counts.sum()
             random_sample = np.random.random(self.dimension)
             random_sample = random_sample * self.lengths + self.mins
             random_sample = random_sample.reshape((1, -1))

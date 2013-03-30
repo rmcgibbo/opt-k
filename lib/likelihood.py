@@ -8,7 +8,7 @@ from msmbuilder import MSMLib
 import numpy as np
 
 def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False, 
-    kellogg=False):
+    kellogg=False, mapping=None):
     """
     Function to calculate the log likelihood according to:
 
@@ -40,6 +40,9 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
     log_like : float
         log-likelihood as defined above
     """
+
+    if not mapping is None:
+        MSMLib.apply_mapping_to_assignments(trajs, mapping)
 
     counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime)
 
