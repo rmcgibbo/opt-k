@@ -77,3 +77,6 @@ _We also compared three clustering algorithms and used the likelihood function t
 
 _The likelihoods (and BIC’s) of the three clustering algorithms predicted that the K-Means algorithm is the better clustering algorithm. The result of K-Means is many states clustered into the highest density areas of the potential. The Hybrid K-Medoids ends up somewhere in between the K-Centers model and the K-Means model. This is likely due to the implementation being an approximate algorithm that requires more iterations to converge to the best state decomposition._
 ![](https://raw.github.com/rmcgibbo/opt-k/master/paper/figs/clust_vors.png)
+
+_In the WW domain simulations, we projected the coordinates into reduced spaces from two to six dimensions, using tICA @Schwantes:2013... The AIC optimal models were in the 200 to 400 state range. We compared the AIC with the autocorrelation convergence, and found that the AIC optimal model coincided generally with the point at which the autocorrelation functions converged. The BIC, penalizes the models more, and so gave rise to BIC optimal models between 100 and 300 states._
+![](https://raw.github.com/rmcgibbo/opt-k/master/paper/figs/ww_acf_vs_aic.png)
