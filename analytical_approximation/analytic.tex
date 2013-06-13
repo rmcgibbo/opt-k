@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{amsmath, url, geometry}
+\begin{document}
+
+\section*{idea}    
+If we have a point, $(x_1, \ldots, x_n)$, distributed within the $n$-ball of radius $R$, and we measure its ``radius'', $r = \sqrt{\sum_i^n x_i^2}$,
+what is $P(R|r)$? If we know $P(R|r)$ and we measure $r$ for a lot of points,
+can we come up with a good estimate for $R$? Intuitively, it seems like as $n\rightarrow\infty$, $P(R|r)$ should approach $\delta(R-r)$, since all of the
+volume of the $n$-ball will be basically at the surface.
+
+\section*{work}
+
+According to \url{http://mathworld.wolfram.com/BallPointPicking.html}, a point
+chosen from the uniform distribution over the unit $N$-ball is distributed like
+
+$$
+\frac{(X_1, \ldots X_n)}{\sqrt{Y + \sum_i^N X_i^2}}
+$$
+
+Where $X_i$ are drawn independently from a standard normal, and $Y$ is drawn independently from an exponential distribution with $\lambda=1$.
+
+Thus, the radius of the point is distributed like
+
+$$
+R \sim \sqrt{\frac{\sum_i^N X_i^2}{Y  + \sum_i^N X_i^2}}
+$$
+
+or 
+
+$$
+R \sim \frac{1}{\sqrt{\frac{Y}{\sum_i^N X_i^2} + 1}}
+$$
+
+This is basically an exponential distribution over a $\chi^2$ distribution.
+
+Let's call the quotient part $Q$. That is, $Q \sim \frac{Y}{\sum_i^N X_i^2}$. What is the distribution of $Q$? According to \url{dx.doi.org/10.1214/aoms/1177731679}, it should be
+
+$$
+p_Q(q) = \int_{-\infty}^\infty |y| p_{exp}(qy)p_{\chi^2}(y)dy
+$$
+
+$$
+p_Q(q) = \frac{\lambda}{2^{N/2} \Gamma(\frac{N}{2})} \int_{-\infty}^\infty |y| e^{-\lambda qy} y^{N/2-1}e^{-y/2}dy
+$$
+
+
+$$
+p_Q(q) = \frac{\lambda}{2^{N/2} \Gamma(\frac{N}{2})} \int_{-\infty}^\infty |y|  y^{N/2-1}e^{-(\lambda q + 1/2) y}dy
+$$
+
+With some help from Wolfram alpha, I think that we can do this integral. 
+Wolfram gives the identity
+$$
+\int x^n e^{-cx} \; dx = -\frac{x^n (cx)^{-n} \; \Gamma(n + 1, cx)}{c} + \text{constant}
+$$
+Where $\Gamma(a, x)$ is the incomplete gamma function.
+
+I don't think we need the part of the integral below zero. Because the exponential random variable $p_\text{exp}(qy)$ is only nonzero for $qy > 0$. I think this implies that $y>0$, since obviously $q$ is going to be greater than zero too.
+
+The indefinite integral given implies
+$$
+\int_{0}^{\infty} x^n e^{-cx} \; dx = c^{-n-1} \Gamma(n+1)
+$$
+
+Which would give
+
+$$
+p_Q(q) = \frac{\lambda}{2^{N/2} \Gamma(\frac{N}{2})} \left(\lambda q + \frac{1}{2}\right)^{-\frac{N}{2} - 1} \Gamma(N/2+1)
+$$
+
+$$
+p_Q(q) = \frac{N\lambda}{2^{\frac{N}{2} + 1}} \left(\lambda q + \frac{1}{2}\right)^{-\frac{N}{2} - 1} 
+$$
+
+
+\end{document}
