@@ -152,5 +152,12 @@ We found that the BIC of the models built using K-Centers clustering has a minim
 \includegraphics[width=2in]{figs/clust_vors.png}
 \caption{The likelihoods (and BIC's) of the three clustering algorithms predicted that the K-Means algorithm is the better clustering algorithm. The result of K-Means is many states clustered into the highest density areas of the potential. The Hybrid K-Medoids ends up somewhere in between the K-Centers model and the K-Means model. This is likely due to the implementation being an approximate algorithm that requires more iterations to converge to the best state decomposition.}
 \end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=2in]{figs/ww_acf_vs_aic.png}
+\caption{In the WW domain simulations, we projected the coordinates into reduced spaces from two to six dimensions, using tICA \cite{Schwantes:2013..}. The AIC optimal models were in the 200 to 400 state range. We compared the AIC with the autocorrelation convergence, and found that the AIC optimal model coincided generally with the point at which the autocorrelation functions converged. The BIC, penalizes the models more, and so gave rise to BIC optimal models between 100 and 300 states.}
+\end{figure}
+
 \bibliography{bibliography}
 \end{document}
