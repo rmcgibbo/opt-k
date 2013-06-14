@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{amsmath, url, geometry}
+\usepackage{amsmath, url, geometry, graphicx}
 \begin{document}
 
 \section*{idea}    
@@ -40,12 +40,12 @@ p_Q(q) = \int_{-\infty}^\infty |y| p_{exp}(qy)p_{\chi^2}(y)dy
 $$
 
 $$
-p_Q(q) = \frac{\lambda}{2^{N/2} \Gamma(\frac{N}{2})} \int_{-\infty}^\infty |y| e^{-\lambda qy} y^{N/2-1}e^{-y/2}dy
+p_Q(q) = \frac{1}{2^{N/2} \Gamma(\frac{N}{2})} \int_{-\infty}^\infty |y| e^{-qy} y^{N/2-1}e^{-y/2}dy
 $$
 
 
 $$
-p_Q(q) = \frac{\lambda}{2^{N/2} \Gamma(\frac{N}{2})} \int_{-\infty}^\infty |y|  y^{N/2-1}e^{-(\lambda q + 1/2) y}dy
+p_Q(q) = \frac{1}{2^{N/2} \Gamma(\frac{N}{2})} \int_{-\infty}^\infty |y|  y^{N/2-1}e^{-(q + 1/2) y}dy
 $$
 
 With some help from Wolfram alpha, I think that we can do this integral. 
@@ -65,25 +65,44 @@ $$
 Which would give
 
 $$
-p_Q(q) = \frac{\lambda}{2^{N/2} \Gamma(\frac{N}{2})} \left(\lambda q + \frac{1}{2}\right)^{-\frac{N}{2} - 1} \Gamma(N/2+1)
+p_Q(q) = \frac{1}{2^{N/2} \Gamma(\frac{N}{2})} \left(q + \frac{1}{2}\right)^{-\frac{N}{2} - 1} \Gamma(N/2+1)
 $$
 
 $$
-p_Q(q) = \frac{N\lambda}{2^{\frac{N}{2} + 1}} \left(\lambda q + \frac{1}{2}\right)^{-\frac{N}{2} - 1} 
+p_Q(q) = \frac{N}{2^{\frac{N}{2} + 1}} \left(q + \frac{1}{2}\right)^{-\frac{N}{2} - 1} 
 $$
 
 Since $R(q)$ is invertible, we get (?)
 
 $$
-p_R(r) = \frac{N\lambda}{2^{\frac{N}{2} + 1}} \left(\frac{\lambda}{r^2} -\lambda + \frac{1}{2} \right)^{-\frac{N}{2} - 1} 
-$$
-
-$\lambda$ was really assumed to be one from the beginning (it was the unit-ball), so
-
-$$
 p(r) = \frac{N}{2^{\frac{N}{2} + 1}} \left(\frac{1}{r^2} - \frac{1}{2} \right)^{-\frac{N}{2} - 1}
 $$
 
-Next step: What if it's \emph{not} a unit-ball? Then we'll get $p(r)$ as a function of the ball's radius. We dealt with the $\lambda$ separately, but there is also a term from the $\chi^2$ distributions (which should be $\lambda^2$ that I didn't carry through).
+Next step: What if it's \emph{not} a unit-ball? If the ball of of radius $R$, then that just sets the unit system, so  we have something like: (need a new normalization condition?)
+
+$$
+p(\frac{r}{R}) \propto \frac{N}{2^{\frac{N}{2} + 1}} \left(\frac{R^2}{r^2} - \frac{1}{2} \right)^{-\frac{N}{2} - 1}
+$$
+
+So how do we go from here to the quantity we want, which is $p(r|R)$?
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3in]{p_of_r.png}
+\caption{The $p(r)$ expression looks reasonable. In higher dimensions, the distribution is more peaked towards the surface at $r \approx 1$. But I think the normalization is off}
+\end{figure}
+
+We're going to have a lot of observations of $r$. If we assume that they're independent, then our log likelihood is 
+
+$$
+\mathcal{L} = -\left( \frac{N}{2} - 1\right) \sum_i \log \left( \frac{R^2}{r_i^2} - \frac{1}{2} \right)
+$$
+
+Taking the derivative of the log likelihood with respect to $R$, we have
+$$
+\frac{\partial \mathcal{L}}{\partial R} = - \sum_i \frac{4R}{r_i^2 - 2R^2} = 0
+$$
+
+How do I solve this for $R$?
 
 \end{document}
