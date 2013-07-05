@@ -23,6 +23,25 @@ Markov State Model
 
 \maketitle
 
+
+\section{Introduction}
+\begin{itemize}
+\item Many processes in proteins are fundamentally dynamical in nature. Folding, aggregation, cryptic binding sites. Governed by a delicate entropic and enthalpic balance.
+\item Set up a conflict between the detailed picture given by MD simulation and the simple picture seen by experiments. Multidimensional time series vs. phenomenological two-state behavior. But sometimes experiments see more complex dynamics too -- interpreted as alternate pathways, kinetic intermediates.
+\item Minimially-biased kenetic analysis of MD data has been a challenge for the field. Some procedures, in making strong assumptions about the form of the simplified dynamics -- e.g. rxn coord, G\={o} -- lack the capability to describe the complex systems in which those assumptions break down.
+\item Here, we seek to build models that are \emph{suitably} complex, given the data. Markov state models are able to capture both two-state and more complex multi-state kinetics.
+\item Like all statistical methods, Markov state models are chacterized by a bias-variance tradeoff. Picking the number of states in the MSM is a key tradeoff parameter, with statistical error balanced against modelling bias.
+\end{itemize}
+
+\subsection{Comparison to previous work}
+After we've introduced the idea:
+\begin{itemize}
+\item Contrast with lumping. Instead of going overboard on making too many states and then trying to correct it by merging some of them, we're going to try to pick the right number in the first place.
+\item Given the frame that lumping is an attempt to correct the statistical error comping from too many states (bias-variance), it makes sense that spectral methods like PCCA/PCCA+ fail: they're construction assumes that the transition matrix (its eigenspectrum) is known precisely. But the conditions where that is most likely to break down, when there are too many states  -- that's precisely the time that you're trying to apply these methods. So PCCA/PCCA+ is unsuitable here.
+\item BACE on the other hand, by explicitly modeling the statistical uncertainty when merging states, does not suffer from this drawback. (say something nice, get greg as reviewer?)
+\end{itemize}
+
+
 \section{Overview}
 
 A significant challenge in the automated construction of Markov state
