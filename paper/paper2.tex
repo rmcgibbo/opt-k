@@ -105,23 +105,44 @@ We simulated [HOW MANY STEPS?] of Langevin dynamics on the M\"{u}ller potential,
 
 As shown in Fig. \ref{fig:mullerlike}, models built with too few states achieve a drastically reduced likelihood, but above a threshold region the likelihood increases relatively slowly. Here, the BIC's penalty on the number of parameters, which scales with the square of the number of states, begins to dominate. This model selection is consistent with tests based on the invariance of transition matrix eigenspectrum, but permits a direct optimization of the state space.
 
+\begin{figure}
+\centering
+\includegraphics[width=2in]{figs/ww_bic_vs_eval_slide_nscounts.png}
+\caption{Implied timescales and BIC scores for a series of Markov state models for the Fip35 WW domain. The panels differ by the dimensionality of the tICA projection. All models were built using Markovian lag time of [HOW MANY ns].}
+\label{fig:ww}
+\end{figure}
+
 \subsection{Alanine Dipeptide}
 
 \subsection{Fip35 WW Domain}
 
-\begin{figure}
-\centering
-\includegraphics[width=2in]{figs/ww_bic_vs_eval_slide_nscounts.png}
-\caption{}
-\label{fig:ww}
-\end{figure}
+To test the procedure on a larger protein system, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{}. In order to reduce the dimensionality of the problem, especially critical for the computation of the state volumes, we first preprocess the trajectories using time-structure based independent components analysis, retaining between two and six uncorrelated(?) linear combination of pairwise distances(?).
 
-To test the procedure on a larger protein system, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw research \cite{}. In order to reduce the dimensionality of the problem, especially critical for the computation of the state volumes, we first preprocess the trajectories using time-structure based independent components analysis, retaining between two and six uncorrelated(?) linear combination of pairwise distances(?).
+How many states are required for a Markov state model? Lane et. al., when analyzing this same dataset, proposed a 26,000 state Markov state model after clustering the data by RMSD, whereas Kellogg et. al. using an approach similar to that described herein, arrive at a [HOW MANY] state model after clustering on contact maps\cite{Lane2011Markov, Kellogg2012Evaluation}. 
+
+\begin{itemize}
+\item Is the 26,000 state model ``overfit''? The obvious answer, based on the line of reasoning that this paper is taking, is yes. But I think we need to consider the question a little more subtly. Perhaps it depends on what questions we ask of the model. When you ask both a ``properly-fit'' model and an overfit model a question that basically falls within the training set -- and neither of them need to extrapolate or really infer out-of-sample information, they'll both do fine. Heck, the overfit model might do better at telling you exactly what was \emph{in} the dataset.
+\item The folding timescale is relatively insensitive to differences in MSM construction methodology. This has been observed in many datasets (McGibbon 2013, others). We hypothesize that this behavior is due to the large structural deviations at play -- even a two state model, given the same dataset, could basically get the right timescale just from counting the number of transitions. But finding these other timescales that are structurally subtle is different challenge. Also, how robust are other properties like experimental projections or the MFPT distribution to the number of states?
+\item Single trajectory datasets are ``easier'' for MSMs. One of the uses of MSMs is to ``stich together'' multiple trajectories -- this function only happens when the states are large enough that they \emph{connect} trajectories, so you can't have too many states in this case. But when you have a single trajectory, there's no possible way to create a disconnected model anyways.
+\item We need to state, elegantly if possible, the differences between our likelihood and Liz Kellogg's. This requires some careful language, since we think there are methodological problems with her approach.
+\end{itemize}
+
+\subsection{Limitations and Future Work}
+
+\begin{itemize}
+\item This model doesn't help us pick the lag time.
+\item It also doesn't help us pick the projected vector space, at least in a quantitative way. This is kind of a big deal, but it is what it is.
+\item Uniform distributions are extremely inconvenient to work with. In the future, we plan to extend this work to Markov state models without discrete states.
+\item \{I want to get this in print.\} Going forward, we anticipate that a combination of kinetic dimensionality reduction and clustering is going to be the key combination for robust Markov state model construction. The two approaches are characterized by complementary approximations and sources of error. In dimensionality reduction, the assumption is that the dynamics ``align'' with the vectors in some sense -- we talk about dynamics in the ``x direction'' as having some characteristic, regardless of whether they occur around $x=x_a$ or $x=x_b$. In clustering, if $x_a$ and $x_b$ are in different states, there's no crosstalk at all. A euclidean distance metric is invariant with respect to unitary transforms anyways. But clustering gets ``thrown off'' when you have kinetically irrelevant directions: to get the same resolution with the clusters in the kinetically \emph{relevant} directions, you need a number of states that is exponential in the number of included kinetically \emph{irrelevant} directions. Because the sources of error are complementary, the combination should be uniquely powerful.
+\end{itemize}
 
 
-
-
-
+\section{Conclusions}
+\begin{itemize}
+    \item MSMs are great
+    \item They have weaknesses. We are solving them.
+    \item The automated selection of the number of states is a critical part of procedures that build MSMs as part of a simulation protocol to drive adaptive sampling. If MD algorithms required user input every couple picoseconds, people would never get anything done.
+\end{itemize}
 
 \bibliography{bibliography}
 \end{document}
