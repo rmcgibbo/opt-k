@@ -72,10 +72,10 @@ an asymptotic approximation Bayesian evidence.
 
 \begin{equation}
 \label{eq:bic}
-\mathrm{BIC} \equiv -2\cdot \ln L + k \ln (n)
+\mathrm{BIC} \equiv -2\cdot \ln L + k \cdot \ln N
 \end{equation}
 
-where $L$ is the likelihood, $k$ is the number of free parameters, and $n$ is the number of data points, assumed to be independent and identically distributed.
+where $L$ is the likelihood, $k$ is the number of free parameters, and $N$ is the number of data points, assumed to be independent and identically distributed.
 
 \section{Computational Methods}
 
@@ -98,7 +98,7 @@ We simulated [HOW MANY STEPS?] of Langevin dynamics on the M\"{u}ller potential,
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=2in]{figs/like_comp.png}
+\includegraphics[width=3.3in]{figs/muller_bic_timescales.png}
 \caption{In models built using between 50 and 1,000 states with the $k$-centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states, very close to the region in which the BIC is minimized. The BIC optimal model is also where the models' slowest implied timescals begins to become invariant with respect to the number of states.}
 \label{fig:mullerlike}
 \end{figure}
