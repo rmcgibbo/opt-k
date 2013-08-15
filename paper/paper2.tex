@@ -82,7 +82,7 @@ where $L$ is the likelihood, $k$ is the number of free parameters, and $N$ is th
 \begin{figure}
 \centering
 \includegraphics[width=3in]{figs/fig1_rbow.png}
-\caption{Three systems studied in this work. (a) Langevin dynamics on the two dimensional M\"{u}ller potential. (b) 50 ns of dynamics of alanine dipeptide. (c) 200 $\mu s$ of dynamics of the Fip35 WW domain\cite{Liu2008Experimental}, courtesy of D.E. Shaw research \cite{}.}
+\caption{Three systems studied in this work. (a) Langevin dynamics on the two dimensional M\"{u}ller potential. (b) 50 ns of dynamics of alanine dipeptide. (c) 200 $\mu s$ of dynamics of the Fip35 WW domain\cite{Liu2008Experimental}, courtesy of D.E. Shaw research \cite{Shaw2010Atomic}.}
 \end{figure}
 
 The uniform distribution emission model presents a computational challenge: its use requires the calculation of the (hyper)volume of the MSM's states, which, when defined by clustering are high-dimensional Voronoi cells. While trivial in two or three dimensions, this computational geometry task becomes challenging in high-dimensional settings. The computation of such volumes has occupied significant attention in recent years in the computational geometry literature, especially via randomized algorithms\cite{Kannan97, Simonovits03, Lovasz03}. We opt to approximate the volumes using naive Monte Carlo rejection sampling, which we find tractable for large systems only when the molecular dynamics dataset is first projected into a suitable small vector space of up to perhaps ten dimensions.
@@ -116,7 +116,7 @@ As shown in Fig. \ref{fig:mullerlike}, models built with too few states achieve 
 
 \subsection{Fip35 WW Domain}
 
-To test the procedure on a larger protein system, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{}. In order to reduce the dimensionality of the problem, especially critical for the computation of the state volumes, we first preprocess the trajectories using time-structure based independent components analysis, retaining between two and six uncorrelated(?) linear combination of pairwise distances(?).
+To test the procedure on a larger protein system, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{Shaw2010Atomic}. In order to reduce the dimensionality of the problem, especially critical for the computation of the state volumes, we first preprocess the trajectories using time-structure based independent components analysis, retaining between two and six uncorrelated(?) linear combination of pairwise distances(?).
 
 How many states are required for a Markov state model? Lane et. al., when analyzing this same dataset, proposed a 26,000 state Markov state model after clustering the data by RMSD, whereas Kellogg et. al. using an approach similar to that described herein, arrive at a [HOW MANY] state model after clustering on contact maps\cite{Lane2011Markov, Kellogg2012Evaluation}. 
 
