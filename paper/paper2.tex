@@ -80,7 +80,7 @@ where $L$ is the likelihood, $k$ is the number of free parameters, and $N$ is th
 
 \begin{figure}
 \centering
-\includegraphics[width=3in]{figs/fig1_rbow.png}
+\includegraphics[width=3in]{figs/mull_ww.png}
 \caption{Three systems studied in this work. (a) Langevin dynamics on the two dimensional M\"{u}ller potential. (b) 50 ns of dynamics of alanine dipeptide. (c) 200 $\mu s$ of dynamics of the Fip35 WW domain\cite{Liu2008Experimental}, courtesy of D.E. Shaw research \cite{Shaw2010Atomic}.}
 \end{figure}
 
@@ -97,7 +97,7 @@ We simulated [HOW MANY STEPS?] of Langevin dynamics on the M\"{u}ller potential,
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=3.3in]{figs/muller_bic_timescales.png}
+\includegraphics[width=3.3in]{figs/mull_cross.png}
 \caption{In models built using between 50 and 1,000 states with the $k$-centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states, very close to the region in which the BIC is minimized. The BIC optimal model is also where the models' slowest implied timescals begins to become invariant with respect to the number of states.}
 \label{fig:mullerlike}
 \end{figure}
@@ -106,7 +106,7 @@ As shown in Fig. \ref{fig:mullerlike}, models built with too few states achieve 
 
 \begin{figure}
 \centering
-\includegraphics[width=2in]{figs/ww_bic_vs_eval_slide_nscounts.png}
+\includegraphics[width=2in]{figs/ww_aic_vs_time.png}
 \caption{Implied timescales and BIC scores for a series of Markov state models for the Fip35 WW domain. The panels differ by the dimensionality of the tICA projection. All models were built using Markovian lag time of [HOW MANY ns].}
 \label{fig:ww}
 \end{figure}
