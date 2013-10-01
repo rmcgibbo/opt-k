@@ -44,7 +44,8 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
     if not mapping is None:
         MSMLib.apply_mapping_to_assignments(trajs, mapping)
 
-    counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime)
+    counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime,
+        n_states=tProb.shape[0])
 
     counts = counts.tocsr()
     tProb = tProb.tocsr()

@@ -67,7 +67,8 @@ class MonteCarlo(VolumeEstimator):
     
         state_counts = np.zeros(len(self.prep_generators))
 
-        while state_counts.sum() < self.num_points:
+        count = 0
+        while count < self.num_points:
         # It might be more efficient to write this vectorially, but I don't 
         # want to run out of memory
             random_sample = np.random.random(self.dimension)
@@ -82,6 +83,8 @@ class MonteCarlo(VolumeEstimator):
             state_dists = self.metric.one_to_all(random_sample, self.prep_generators, 0)
 
             state_counts[np.argmin(state_dists)] += 1
+
+            count += 1
 
         volumes = state_counts.astype(float) / self.num_points
         # volumes are just percentages of the total space
