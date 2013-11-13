@@ -75,3 +75,74 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
         return t_like, v_like
     
     return t_like + v_like
+
+
+def get_kmeans_log_likelihood(tprob, trajs, state_dists, num_dims, lagtime=1,
+    mapping=None, add_weights=False):
+
+    """
+    get the log likelihood of an MSM given that each state emits a conformation
+    according to a user-input probability model. 
+
+    Parameters
+    ----------
+    tprob : scipy.sparse matrix
+        transition probability matrix for your MSM
+    trajs : np.ndarray
+        two-dim. array corresponding to the assignments of each trajectory
+    state_dists : np.ndarray
+        distance of a conformation to its generator
+    num_dims : int
+        number of dimensions in your vector space
+    lagtime : int, optional
+        lag time of the MSM (default: 1)
+    mapping : mapping to map counts to a transition matrix
+    add_weights : bool, optional
+        add the per-state weights corresponding to R_n / R from the X-means 
+        paper (default: False)
+
+    Returns
+    -------
+    log_likelihood : float
+        log likelihood of the model
+
+    Notes
+    -----
+    These results come from Pelleg, D. and Moore A. X-means: Extending K-means
+        with Efficient Estimation of the Number of Clusters. 
+        (http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf)
+    """
+
+    if not mapping is None:
+        MSMLib.apply_mapping_to_assignments(trajs, mapping)
+
+    counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime,
+        n_states=tprob.shape[0])
+
+    counts = counts.tocsr()
+    tprob = tprob.tocsr()
+
+    ij = counts.nonzero()
+
+    state_counts = np.array(counts.sum(axis=1)).flatten()
+    nonzero_counts = np.array(counts.data).flatten()
+    nonzero_tprobs = np.array(tprob[ij]).flatten()
+    # scipy.sparse uses np.matrices which behave differently than arrays
+    # so we cast everything to arrays and do the math with them
+   
+    #log_like = np.sum(np.array(counts.data) * np.array(np.log(tProb[ij]))) - \
+    #    np.sum(state_counts * np.log(volumes))
+    #log_like = np.sum(nonzero_counts * np.log(nonzero_tprobs)) - \
+    #    np.sum(state_counts * np.log(volumes))
+
+    t_like = np.sum(nonzero_counts * np.log(nonzero_tprobs))
+
+    #R = np.sum(state_counts) # total number of points
+    R = np.where(trajs != -1)[0].shape[0]
+    state_var = np.square(state_dists[np.where(trajs != -1)]).sum() / (R - tprob.shape[0])
+    print state_var
+
+    s_like = - num_dims / 2. * R * np.log(2 * np.pi * state_var) - (R - tprob.shape[0]) / 2.
+    print t_like, s_like, t_like + s_like
+    return t_like + s_like
+
