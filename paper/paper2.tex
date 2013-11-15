@@ -13,7 +13,6 @@
 
 \begin{document}
 
-
 \title{Optimal Parameter Selection in Markov State Models for Biomolecular Conformational Dynamics}
 \author{Robert T. McGibbon}
 \author{Christian R. Schwantes}
@@ -48,16 +47,33 @@ P[x_{0...T-1}] dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \cdot \
 
 With a discrete, non-overlapping state space, the likelihood of a sampled trajectory can be decomposed into a product of terms of two types: the state to state transition probabilities, $T(s_i \rightarrow s_j)$, and so-called emission distributions of each state, the conditional probability of observing a conformation at a given location in phase space given that the conformation, $x_t$ is within a certain state, $s(x_t)$.
 
-For example, consider two Markov state models sharing the same transition matrix, $T$. In one model, the state emission distributions are highly peaked at specific locations in phase space, whereas in the other model the emission distributions are uniform over the volume of the states. If an observed trajectory does go through the first models’ regions of high likelihood, it is appropriately termed a more likely model given the data.
+For example, consider two Markov state models sharing the same transition matrix, $T$. In one model, the state emission distributions are highly peaked at specific locations in phase space, whereas in the other model the emission distributions are uniform over the volume of the states. If an observed trajectory does go through the first models' regions of high likelihood, it is appropriately termed a more likely model given the data.
 
-However, models' long timescale behavior -- the rates and fluxes between metastable basins -- are independent of the choice of the emission distributions. The emission distributions characterize only the fine details of the equilibrium distribution within states, a quantity that the MSM approach does not seek to model; implicit in the decision to group conformations together into states is the idea that we decline to model the differences between conformations belonging to the same state. If such differences exist and are sufficiently large to warrant attention, than the states are too large.
-
-Therefore, the most appropriate emission distribution for discrete state MSMs is that of the uniform distribution over the phase-space volume of the state. That is, the likelihood of observing a conformation in phase space given that the conformation is assigned to state $i$ is $0$ if the conformation is outside of the bounding volume of the state and constant if the conformation is within the volume. This constant is set so that the distribution integrates to $1$, and is thus the reciprocal volume of the microstate.
+This emission distribution can be defined in a number of ways. The simplest definition would be a uniform distribution since we are constructing an MSM that is agnostic to intra-state dynamics. When properly normalized, the uniform distribution takes a value of the reciprocal of the state's volume. This makes for an easy expression, however, volumes in high-dimensional states can be difficult to compute \ref{eq:like_vol}. For this reason, we can also choose other emission distributions that may be more tractable. In fact, \citet{Pelleg2000Xmeans} have used a gaussian emission distribution to define a likelihood to compare two k-means clusterings. The result of this emission distribution, is that the likelihood is proportional to the sum of square distances, which is precisely what is optimized in k-means clustering. If we think of k-centers as a poor man's version of k-means, then we can apply this same likelihood.
 
 \begin{equation}
 \label{eq:like_vol}
 P[x_{0...T-1}] dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \cdot \prod_{i=0}^T \frac{1}{V_{s(x_{i})}}
 \end{equation}
+
+\begin{equation}
+\label{eq:like_mvn}
+\begin{split}
+P[x_{0...T-1}] & dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \\
+	&\cdot \prod_{i=0}^T \frac{1}{\left(2 \pi \sigma_{s(x_{i})}^2\right)^\frac{d}{2}} \exp\left(-\frac{||x_i - \mu_{s(x_i)}||^2}{2 \sigma_{s(x_{i})}^2}\right)
+\end{split}
+\end{equation} where $\mu_{s(x_i)}$ is the cluster center for the state that $x_i$ is assigned to. For simplicity, we follow \citet{Pelleg2000Xmeans} for estimating the intrastate variances, and simply use a maximum likelihood estimator so that the likelihood becomes:
+\begin{equation}
+\label{eq:like_mvn}
+\begin{split}
+P[x_{0...T-1}] & dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \\
+	&\cdot \prod_{i=0}^T \frac{1}{\left(2 \pi \hat{\sigma}^2\right)^\frac{d}{2}} \exp\left(-\frac{||x_i - \mu_{s(x_i)}||^2}{2 \hat{\sigma}^2}\right)
+\end{split}
+\end{equation} where
+\begin{equation}
+\label{eq:mle_sigma}
+\hat{\sigma}^2 = \frac{1}{T - k} \sum_{i=0}^T || x_i - \mu_{s(x_i)} ||^2
+\end{equation} where $k$ is the number of states.
 
 \section{Cross Validation and the Bayes Information Criterion}
 
@@ -69,12 +85,16 @@ P[x_{0...T-1}] dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \cdot \
 
 Likelihood maximization is insufficient for model selection when the number of parameters varies between proposed models, as more complex models generally exhibit higher empirical likelihoods, often at the cost of larger generalization errors due to overfitting\cite{Liddle2007Information, Hastie01Elements}. Statistical learning theory provides a number of alternative approaches for this problem. Conceptually, the most straightforward is a full Bayesian treatment in which all unknown model parameters are represented by probability distributions. The evidence for a model is computed by formally integrating over the model parameters and the evidence ratio, or Bayes factor\cite{Gelfand94Bayesian}, then provides a rigorous basis of model selection that appropriately punishes overly complex models as they become poorly constrained in parameter space. Unfortunately such approaches are intractable for problems of this size because of the need to integrate over all possible Markov models of a given size.
 
-Instead, we explore both cross validation and Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} for choosing the number of states in a Markov state model. For cross validation, we parameterize the model, building both the state space and transition matrix on a subset of the data, but evaluating the likelihood on the left-out portion in an attempt to directly measure the generalization error. The BIC on the other hand involves augmenting the likelihood with a penalty on the number of parameters, and is
+Instead, we explore cross validation, Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} and the Akaike information criterion (AIC)\cite{Akaike1974AIC} for choosing the number of states in a Markov state model. For cross validation, we parameterize the model, building both the state space and transition matrix on a subset of the data, but evaluating the likelihood on the left-out portion in an attempt to directly measure the generalization error. The BIC on the other hand involves augmenting the likelihood with a penalty on the number of parameters, and is
 an asymptotic approximation Bayesian evidence.
 
 \begin{equation}
 \label{eq:bic}
 \mathrm{BIC} \equiv -2\cdot \ln L + k \cdot \ln N
+\end{equation}
+\begin{equation}
+\label{eq:eic}
+\mathrm{AIC} \equiv -2\cdot \ln L + 2 \cdot k
 \end{equation}
 
 where $L$ is the likelihood, $k$ is the number of free parameters, and $N$ is the number of data points, assumed to be independent and identically distributed.
@@ -95,15 +115,23 @@ We use a slightly modified version of this definition that adopts the same spiri
 
 \section{Results and Discussion}
 \subsection{M\"{u}ller Potential}
-We simulated $1\times 10^7$ steps of Langevin dynamics on the M\"{u}ller potential, clustered the data using the $k$-centers clustering algorithm with a euclidean distance metric, and computed the state volumes with $1\times 10^5$ rounds of Monte carlo rejection sampling, using a padding distance of $R=0.2$ around the state centers from the 500 state model to define the dataset's envelope.
+We simulated $1\times 10^7$ steps of Langevin dynamics on the M\"{u}ller potential, clustered the first $10^6$ steps using the $k$-centers clustering algorithm with a euclidean distance metric, and computed the state volumes with $1\times 10^5$ rounds of Monte carlo rejection sampling, using a padding distance of $R=0.2$ around the state centers from the 500 state model to define the dataset's envelope.
 
-The volumes did not change drastically upon doing ten times more Monte Carlo rejection sampling, and furthermore, the likelihood remained almost exactly constant, which gives us some confidence that the volumes do not need to be perfect in order to have a good estimate of the likelihood. \hl{I can make a figure, and we can put it in the SI}.
+The volumes did not change drastically upon doing ten times more Monte Carlo rejection sampling, and furthermore, the likelihood remained almost exactly constant, which gives us some confidence that the volumes do not need to be perfect in order to have a good estimate of the likelihood. 
+
+For cross-validation, we used the final $10^6$ frames as the test data.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=3.3in]{figs/mull_cross.png}
+\includegraphics[width=2in]{figs/mull_cross_vert.png}
 \caption{In models built using between 50 and 1,000 states with the $k$-centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states. There are many methods that can be used to test the transferability of an MSM. We've plotted the AIC, BIC, and cross-validation scores for the M\"uller potential simulations. These results indicate that, at least for this dataset, the BIC and AIC may penalize the number of states too heavily. \hl{See SI section: ``AIC vs BIC" for a discussion of the various methods in detail.}}
 \label{fig:mullerlike}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=3in]{figs/kmeans_vor_like.png}
+\caption{MSMs were built using K-Means clustering on the M\"uller potential simulations. Since K-Means optimizes an objective function that is related to the emission probability, our likelihood picks only a few states as the most likely model. Interestingly, the likelihood decreases as you introduce additional states. This behavior is due to the state-to-state likelihood decreased rapidly when adding additional states, which may be a result of the large number of states in the most stable well.}
 \end{figure}
 
 As shown in Fig. \ref{fig:mullerlike}, models built with too few states achieve a drastically reduced likelihood, but above a threshold region the likelihood increases relatively slowly. Here, the AIC and BIC's penalty on the number of parameters, which scales with the square of the number of states, begins to dominate. The optimal models according to the three methods are between 200 and 1000 states for this system. This observation is consistent with the convergence of the timescales of the MSMs, but allows for a direct optimization of the state space, as opposed to a heuristic way of comparing models.
@@ -112,8 +140,8 @@ Interestingly, the AIC and BIC penalize the larger state models much more than t
 
 \begin{figure}
 \centering
-\includegraphics[width=2in]{figs/ww_aic_vs_time.png}
-\caption{Implied timescales and AIC scores for a series of Markov state models for the Fip35 WW domain. The panels differ by the dimensionality of the tICA projection. All models were built using a Markovian lag time of 50 ns. Qualitatively, the optimal model according to the AIC, corresponds roughly to where the timescales begin to flatten out.}
+\includegraphics[width=3in]{figs/ww_logLs.png}
+\caption{For models built using tICA, we were able to compute volumes as the dimensionality was low (A). These likelihoods were qualitatively similar to the MVN likelihoods (B). Because the MVN likelihood is easy to compute, we can use it to calculate the likelihood of a model clustered using the RMSD distance metric (C). Our likelihood indicates we should construct a model with 5000 states in the RMSD metric, whereas previous studies used a model with 26,000 states \cite{Lane2011Markov}.}
 \label{fig:ww}
 \end{figure}
 
@@ -167,6 +195,13 @@ Markov State Models are a promising analysis technique for automatically analyzi
     \item They have weaknesses. We are solving them.
     \item The automated selection of the number of states is a critical part of procedures that build MSMs as part of a simulation protocol to drive adaptive sampling. If MD algorithms required user input every couple picoseconds, people would never get anything done.
 \end{itemize}
+
+
+
+% old stuff about using uniform distributions
+However, models' long timescale behavior -- the rates and fluxes between metastable basins -- are independent of the choice of the emission distributions. The emission distributions characterize only the fine details of the equilibrium distribution within states, a quantity that the MSM approach does not seek to model; implicit in the decision to group conformations together into states is the idea that we decline to model the differences between conformations belonging to the same state. If such differences exist and are sufficiently large to warrant attention, than the states are too large.
+
+Therefore, the most appropriate emission distribution for discrete state MSMs is that of the uniform distribution over the phase-space volume of the state. That is, the likelihood of observing a conformation in phase space given that the conformation is assigned to state $i$ is $0$ if the conformation is outside of the bounding volume of the state and constant if the conformation is within the volume. This constant is set so that the distribution integrates to $1$, and is thus the reciprocal volume of the microstate.
 
 
 
