@@ -85,7 +85,7 @@ P[x_{0...T-1}] & dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \\
 
 Likelihood maximization is insufficient for model selection when the number of parameters varies between proposed models, as more complex models generally exhibit higher empirical likelihoods, often at the cost of larger generalization errors due to overfitting\cite{Liddle2007Information, Hastie01Elements}. Statistical learning theory provides a number of alternative approaches for this problem. Conceptually, the most straightforward is a full Bayesian treatment in which all unknown model parameters are represented by probability distributions. The evidence for a model is computed by formally integrating over the model parameters and the evidence ratio, or Bayes factor\cite{Gelfand94Bayesian}, then provides a rigorous basis of model selection that appropriately punishes overly complex models as they become poorly constrained in parameter space. Unfortunately such approaches are intractable for problems of this size because of the need to integrate over all possible Markov models of a given size.
 
-Instead, we explore cross validation, Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} and the Akaike information criterion (AIC)\cite{Akaike1974AIC} for choosing the number of states in a Markov state model. For cross validation, we parameterize the model, building both the state space and transition matrix on a subset of the data, but evaluating the likelihood on the left-out portion in an attempt to directly measure the generalization error. The BIC on the other hand involves augmenting the likelihood with a penalty on the number of parameters, and is
+Instead, we explore cross validation, Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} and the Akaike information criterion (AIC)\cite{Akaike1974AIC} for choosing the number of states in a Markov state model. For cross validation, we parameterize the model, building both the state space and transition matrix on a subset of the data, but evaluate the likelihood on the left-out portion in an attempt to directly measure the generalization error. The BIC on the other hand involves augmenting the likelihood with a penalty on the number of parameters, and is
 an asymptotic approximation Bayesian evidence.
 
 \begin{equation}
@@ -124,19 +124,30 @@ For cross-validation, we used the final $10^6$ frames as the test data.
 \begin{figure}[h]
 \centering
 \includegraphics[width=2in]{figs/mull_cross_vert.png}
-\caption{In models built using between 50 and 1,000 states with the $k$-centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states. There are many methods that can be used to test the transferability of an MSM. We've plotted the AIC, BIC, and cross-validation scores for the M\"uller potential simulations. These results indicate that, at least for this dataset, the BIC and AIC may penalize the number of states too heavily. \hl{See SI section: ``AIC vs BIC" for a discussion of the various methods in detail.}}
+\caption{In models built using between 50 and 1,000 states with the $k$-centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states. There are many methods that can be used to test the transferability of an MSM. We've plotted the AIC, BIC, and cross-validation scores for the M\"uller potential simulations. These results indicate that, at least for this dataset, the BIC and AIC may penalize the number of states too heavily.}
 \label{fig:mullerlike}
 \end{figure}
+
+As shown in \cref{fig:mullerlike}, models built with too few states achieve a drastically reduced likelihood, but above a threshold region the likelihood increases relatively slowly. Here, the AIC and BIC's penalty on the number of parameters, which scales with the square of the number of states, begins to dominate. The optimal models according to the three methods are between 200 and 1000 states for this system. This observation is consistent with the convergence of the timescales of the MSMs, but allows for a direct optimization of the state space, as opposed to a heuristic way of comparing models.
+
+Interestingly, the AIC and BIC penalize the larger state models much more than the cross-validation approach. This could be due to the simplicity of this system. Since the M\"uller potential is only two-dimensional, it is difficult to actually produce a drastically over-fit model. We suspect that the cross-validation score on a real protein system would be closer to the BIC and AIC. However, we note, that cross-validation requires estimating a model without some subset of the data, which is not feasible for large systems that are not over-sampled.
+
+We also tested the MVN likelihood on MSMs built using k-means clustering on the M\"uller potential. The likelihood (\cref{fig:kmeans_mull}) peaks at a five-state model and actually decreases without the aid of the BIC or AIC. We can explain this maximum model by looking at where the cluster centers are located on the M\"uller potential. The five state model is the first model to have a cluster center located in the least stable well and as more states are added, the most stable well ends up being heavily split. We hypothesize that this over splitting in the most stable well gives rise to the decrease in likelihood.
 
 \begin{figure}
 \centering
 \includegraphics[width=3in]{figs/kmeans_vor_like.png}
 \caption{MSMs were built using K-Means clustering on the M\"uller potential simulations. Since K-Means optimizes an objective function that is related to the emission probability, our likelihood picks only a few states as the most likely model. Interestingly, the likelihood decreases as you introduce additional states. This behavior is due to the state-to-state likelihood decreased rapidly when adding additional states, which may be a result of the large number of states in the most stable well.}
+\label{fig:kmeans_mull}
 \end{figure}
 
-As shown in Fig. \ref{fig:mullerlike}, models built with too few states achieve a drastically reduced likelihood, but above a threshold region the likelihood increases relatively slowly. Here, the AIC and BIC's penalty on the number of parameters, which scales with the square of the number of states, begins to dominate. The optimal models according to the three methods are between 200 and 1000 states for this system. This observation is consistent with the convergence of the timescales of the MSMs, but allows for a direct optimization of the state space, as opposed to a heuristic way of comparing models.
+\subsection{Fip35 WW Domain}
 
-Interestingly, the AIC and BIC penalize the larger state models much more than the cross-validation approach. This could be due to the simplicity of this system. Since the M\"uller potential is only two-dimensional, it is difficult to actually produce a drastically over-fit model. We suspect that the cross-validation score on a real protein system would be closer to the BIC and AIC. However, we note, that cross-validation requires estimating a model without some subset of the data, in which case, it is not feasible for large systems that are not over-sampled.
+To test the procedure on a larger protein system, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{Shaw2010Atomic}. In order to reduce the dimensionality of the problem, especially critical for the computation of the state volumes, we first preprocess the trajectories using time-structure based independent components analysis (tICA) \cite{Schwantes2013Improvements}, retaining between two and six uncorrelated linear combinations of residue-residue distances.
+
+How many states are required for a Markov state model? Lane et. al., when analyzing this same dataset, proposed a 26,000 state Markov state model after clustering the data by RMSD, whereas Kellogg et. al. using an approach similar to that described herein, arrive at a \hl{1,000} state model after clustering on contact maps\cite{Lane2011Markov, Kellogg2012Evaluation}. Both likelihoods, however, tell us that while using tICA, we should build models that have 200-500 states (\cref{fig:ww}). 
+
+Since the MVN likelihood only requires the computation of distances, we can use it to analyze models built with in high dimensions as well as those built in spaces that are not vector spaces. We applied this methodology to models built using the minimum root mean square deviation in atom positions (RMSD) and k-centers clustering (\cref{fig:ww}). The MVN likelihood indicates that models built using RMSD should using on the order of 5,000 states, which is significantly higher than the tICA models. This is an illustration of how the tICA method can be used remarkably well to build Markov Models.
 
 \begin{figure}
 \centering
@@ -145,13 +156,7 @@ Interestingly, the AIC and BIC penalize the larger state models much more than t
 \label{fig:ww}
 \end{figure}
 
-\subsection{Fip35 WW Domain}
-
-To test the procedure on a larger protein system, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{Shaw2010Atomic}. In order to reduce the dimensionality of the problem, especially critical for the computation of the state volumes, we first preprocess the trajectories using time-structure based independent components analysis\cite{Schwantes2013Improvements}, retaining between two and six uncorrelated linear combinations of residue-residue distances.
-
-How many states are required for a Markov state model? Lane et. al., when analyzing this same dataset, proposed a 26,000 state Markov state model after clustering the data by RMSD, whereas Kellogg et. al. using an approach similar to that described herein, arrive at a \hl{1,000} state model after clustering on contact maps\cite{Lane2011Markov, Kellogg2012Evaluation}. \hl{That number is the micro state model from KCenters and CM's, but they also did KMeans and used 100 states}.
-
-According to this likelihood approach, the most likely models built on tICA projections are in the hundreds of states range. This does not mean, however, that the previous models are ``wrong." The value of a model can only be judged based on the questions one is asking. If the question is, what are the slowest dynamics in the data, then an over-fit model may actually give a better estimate than a ``perfectly-fit" model. However, if the question requires an inference of out-of-sample information, then we would trust the well-fit model over an over-fit one.
+According to this likelihood approach, the most likely models built on tICA projections are in the hundreds of states range. 
 
 For protein simulations, the slowest timescale (typically corresponding to folding) has been observed to be insensitive to differences in MSM construction methodology \cite{McGibbon2013Learning, others?}. We hypothesize that this behavior is due to the large structural changes associated with a folding event -- even a two state model, given the same dataset, could estimate the slowest timescale by simply counting the number of transitions. However, teasing out the slow timescales that are associated with subtler structural changes is a different challenge. 
 
