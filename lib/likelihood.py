@@ -117,6 +117,7 @@ def get_kmeans_log_likelihood(tprob, trajs, state_dists, num_dims,
         (http://www.cs.cmu.edu/~dpelleg/download/xmeans.pdf)
     """
 
+    cross = False
     if not train_dists is None and not train_ass is None:
         cross = True
 
@@ -152,6 +153,7 @@ def get_kmeans_log_likelihood(tprob, trajs, state_dists, num_dims,
     else:
         state_var = np.square(state_dists[np.where(trajs != -1)]).sum() / (R - tprob.shape[0])
 
+    print 'state variance: %.4e' % state_var
     s_like = - num_dims / 2. * R * np.log(2 * np.pi * state_var) 
     if cross:
         s_like -= np.square(state_dists[np.where(trajs != -1)]).sum() / (2. * state_var)
