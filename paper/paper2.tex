@@ -11,6 +11,7 @@
                         % documents and URLs
 \usepackage[capitalise]{cleveref}   % use for referencing figures/equations
 \usepackage{soul}
+\usepackage{bm}
 
 \begin{document}
 
@@ -52,40 +53,47 @@ After diagonalization of the transition matrix, the relaxation of any initial pr
 \section{Likelihood of a Markov State Model}
 With the kinetic model expressed as a set of pairwise state to state transition probabilities at a given lag time, the likelihood of an ensemble of trajectories after projection into the indicator function basis is given simply by the product of the transition matrix elements along the observed trajectories. However, as we vary the number of states, it is not permissible to simply compare these likelihoods as part of an optimization of the state definitions. In doing so, the optimal model would always be the trivial one state model, whose computed likelihood is unity regardless of the data.
 
-The appropriate likelihood is instead a path action in phase space, on which the discrete states are merely an indicator function basis. With $s(X)$ as the function mapping conformations into the indicator function basis set, $s : \mathbb{R}^{3N} \rightarrow \{1, 2, \ldots, K\}$, the likelihood can be written as
+The appropriate likelihood is instead a path action in phase space, on which the discrete states are merely an indicator function basis. With $s(X)$ as the function mapping conformations into the indicator function basis set, and $\{\mathbf{x}_t\}_{t=1}^N$ an observed trajectory, the likelihood can be written as:
 
-\begin{align}
-P[x_{0...T-1}] dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \cdot \prod_{i=0}^{T} p_{s(x_i)}(x_{i})
+\begin{equation}
+\begin{split}
+P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
+\cdot \prod_{t=1}^{N} p_{s(\mathbf{x}_t)}(\mathbf{x}_{t}) \cdot d\mathbf{x}^N
 \label{eq:like}
-\end{align}
+\end{split}
+\end{equation}
 
-With a discrete, non-overlapping state space, the likelihood of a sampled trajectory can be decomposed into a product of terms of two types: the state to state transition probabilities, $T(s_i \rightarrow s_j)$, and so-called emission distributions of each state, the conditional probability of observing a conformation at a given location in phase space given that the conformation, $x_t$ is within a certain state, $s(x_t)$.
+With a discrete, non-overlapping state space, the likelihood of a sampled trajectory can be decomposed into a product of terms of two types: the state to state transition probabilities, $T(s_i \rightarrow s_j)$, and so-called emission distributions of each state, the conditional probability of observing a conformation at a given location in phase space given that the conformation, $\mathbf{x}_t$ is within a certain state, $s(\mathbf{x}_t)$.
 
 For example, consider two Markov state models sharing the same transition matrix, $T$. In one model, the state emission distributions are highly peaked at specific locations in phase space, whereas in the other model the emission distributions are uniform over the volume of the states. If an observed trajectory does go through the first models' regions of high likelihood, it is appropriately termed a more likely model given the data.
 
-This emission distribution can be potentially modeled in multiple ways, each of which, in combination with a transition matrix, parameterizes a different statistical model. We propose two possible distributions: first, one may model the conditional distribution $P(x_t | s(x_t))$ as a uniform distribution over the (hyper)volume of $s(x_t)$, as shown in eq. \ref{eq:like_vol}. This model has the advantage of appearing agnostic with respect to intra-state dynamics but is intractable in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation. A more tractable alternative is a Gaussian emission model where $P(x_t | s(x_t))$ is modeled as multivariate normal, where the pairwise overlap between the emission distributions is treated as a truncation error, as shown in eq.  \ref{eq:like_vol} and used in the popular X-means algorithm.\cite{Pelleg2000Xmeans} The truncation error steps from the fact that the emission probability distributions from every state assign nonzero probability to each conformation in a dataset, while the parameterization procedure for the Markov transition probabilities assumes each conformation to be uniquely assigned to a single state. Relaxing this approximation is possible with the forward-backward algorithm,\cite{Rabiner1989Tutorial} but is beyond the scope of this work.
+This emission distribution can be potentially modeled in multiple ways, each of which, in combination with a transition matrix, parameterizes a different statistical model. We propose two possible distributions: first, one may model the conditional distribution $P(\mathbf{x}_t | s(\mathbf{x}_t))$ as a uniform distribution over the (hyper)volume of $s(\mathbf{x}_t)$, as shown in eq. \ref{eq:like_vol}. This model has the advantage of appearing agnostic with respect to intra-state dynamics but is intractable in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation. A more tractable alternative is a Gaussian emission model where $P(\mathbf{x}_t | s(\mathbf{x}_t))$ is modeled as multivariate normal, where the pairwise overlap between the emission distributions is treated as a truncation error, as shown in eq.  \ref{eq:like_vol} and used in the popular X-means algorithm.\cite{Pelleg2000Xmeans} The truncation error steps from the fact that the emission probability distributions from every state assign nonzero probability to each conformation in a dataset, while the parameterization procedure for the Markov transition probabilities assumes each conformation to be uniquely assigned to a single state. Relaxing this approximation is possible with the forward-backward algorithm,\cite{Rabiner1989Tutorial} but is beyond the scope of this work.
 
 %The simplest definition would be a uniform distribution since we are constructing an MSM that is agnostic to intra-state dynamics. When properly normalized, the uniform distribution takes a value of the reciprocal of the state's volume. This makes for an easy expression, however, volumes in high-dimensional states can be difficult to compute \ref{eq:like_vol}. For this reason, we can also choose other emission distributions that may be more tractable. In fact, \citet{Pelleg2000Xmeans} have used a gaussian emission distribution to define a likelihood to compare two k-means clusterings. The result of this emission distribution, is that the likelihood is proportional to the sum of square distances, which is precisely what is optimized in k-means clustering. If we think of k-centers as a poor man's version of k-means, then we can apply this same likelihood.
 
 \begin{equation}
 \label{eq:like_vol}
-P[x_{0...T-1}] dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \cdot \prod_{i=0}^T \frac{1}{V_{s(x_{i})}}
+\begin{split}
+P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
+	\cdot \prod_{t=1}^N \frac{1}{V_{s(\mathbf{x}_{t})}} \cdot d\mathbf{x}^N
+\end{split}
 \end{equation}
 
 \begin{equation}
 \label{eq:like_mvn}
 \begin{split}
-&P[x_{0...T-1}] dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \\
-    &\cdot \prod_{i=0}^T \left(2 \pi\right)^\frac{d}{2} |\Sigma_{s(x_i)}|^{-\frac{1}{2}}  \exp\left(-\frac{1}{2} (x_i - \mu_{s(x_i)})' \Sigma_{s(x_i)}^{-1} (x_i - \mu_{s(x_i)})\right)
+&P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
+	&\;\;\cdot \prod_{t=1}^N\Bigg[ \frac{1}{(2 \pi)^\frac{d}{2} |\Sigma_{s(\mathbf{x}_t)}|^\frac{1}{2}} \\
+    &\;\;\cdot \exp\left(-\frac{1}{2} (\mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)})^T \Sigma_{s(\mathbf{x}_t)}^{-1} (\mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)})\right)\Bigg] \cdot d\mathbf{x}^N
 \end{split}
 \end{equation}
 
-where $\mu_{s(x_i)}$ is the cluster center assigned to $x_i$ and $\Sigma_{s(x_i)}$ is the corresponding covariance matrix. For simplicity, we follow \citet{Pelleg2000Xmeans} and employ a spherical Gaussian model with a single shared variance parameter across the states estimated by maximum likelihood, under which conditions eq. \ref{eq:like_mvn} reduces to
+where $\bm{\mu}_{s(\mathbf{x}_t)}$ is the cluster center assigned to $\mathbf{x}_t$ and $\Sigma_{s(\mathbf{x}_t)}$ is the corresponding covariance matrix. For simplicity, we follow \citet{Pelleg2000Xmeans} and employ a spherical Gaussian model with a single shared variance parameter across the states estimated by maximum likelihood, under which conditions eq. \ref{eq:like_mvn} reduces to
 \begin{equation}
 \label{eq:like_mvn2}
 \begin{split}
-P[x_{0...T-1}] & dx^T = \prod_{i=0}^{T-1} T(s(x_i) \rightarrow s(x_{i+1})) \\
-	&\cdot \prod_{i=0}^T \left(2 \pi \hat{\sigma}^2\right)^{-\frac{d}{2}} \exp\left(-\frac{||x_i - \mu_{s(x_i)}||^2}{2 \hat{\sigma}^2}\right)
+P\left[\{\mathbf{x}_t\}_{t=1}^{N}\right] & d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
+	&\cdot \prod_{t=1}^N \left(2 \pi \hat{\sigma}^2\right)^{-\frac{d}{2}} \exp\left(-\frac{||\mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)}||^2}{2 \hat{\sigma}^2}\right)
 \end{split}
 \end{equation} where
 \begin{equation}
@@ -128,7 +136,9 @@ The uniform distribution emission model presents a computational challenge: its 
 
 A further challenge is the procedure by which to model the volume of states which are at the edge of the MSM -- whose Voronoi cells extend to infinity in some direction. In these cases the Voronoi cells are of unbounded volume. Because the convex hull of our simulation datasets are computationally inaccessible, we define the outer extent of our data sets to be the set of all trial points such that the nearest sampled configuration to the trial point is closer than a certain cutoff, $R$.
 
-For cross validation, we find it essential to use a dense prior during transition matrix estimation. Because the maximum likelihood transition matrix fit on a subset of the data assigns probability zero to unobserved transitions, we observe cross validation log likelihoods of negative infinity in all but the most data-rich regimes with maximum likelihood methods. For simplicity, we use the Jeffreys prior on each row of the transition matrix -- a Dirichlet prior with $\alpha=\frac{1}{2}$ -- which can be interpreted as a psuedocount of one half of an observed transition between each pair of states.
+For cross validation, we find it essential to use a dense prior during transition matrix estimation. Because the maximum likelihood transition matrix fit on a subset of the data assigns probability zero to unobserved transitions, we observe cross validation log likelihoods of negative infinity in all but the most data-rich regimes with maximum likelihood methods. We used a dirichlet prior on each entry of the transition matrix, which 
+
+For simplicity, we use the Jeffreys prior on each row of the transition matrix -- a Dirichlet prior with $\alpha=\frac{1}{2}$ -- which can be interpreted as a psuedocount of one half of an observed transition between each pair of states.
 
 \section{Results and Discussion}
 \subsection{M\"{u}ller Potential}
@@ -138,7 +148,7 @@ The volumes did not change drastically upon doing ten times more Monte Carlo rej
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=2in]{figs_final/mull_likes.png}
+\includegraphics[width=3in]{figs_final/mull_likes.png}
 \caption{In models built using between 50 and 1,000 states with the $k$-centers algorithm, the log likelihood function increased quickly and plateaued at approximately 300 states. There are many methods that can be used to test the transferability of an MSM. We've plotted the AIC, BIC, and cross-validation scores for the M\"uller potential simulations. These results indicate that, at least for this dataset, the BIC and AIC may penalize the number of states too heavily.}
 \label{fig:mullerlike}
 \end{figure}
@@ -151,7 +161,7 @@ We also tested the Gaussian likelihood on MSMs built using k-means clustering on
 
 \begin{figure}
 \centering
-\includegraphics[width=3in]{figs/kmeans_like2_lbl.png}
+\includegraphics[width=2.5in]{figs_final/kmeans_like2_lbl.png}
 \caption{MSMs were built using K-Means clustering on the M\"uller potential simulations. Since K-Means optimizes an objective function that is related to the emission probability, our likelihood picks only a few states as the most likely model. Interestingly, the likelihood decreases as you introduce additional states. This behavior is due to the state-to-state likelihood decreased rapidly when adding additional states, which may be a result of the large number of states in the most stable well.}
 \label{fig:kmeans_mull}
 \end{figure}
@@ -164,7 +174,7 @@ How many states are required in a Markov state model? The two 100 $\mu s$ molecu
 
 \begin{figure}
 \centering
-\includegraphics[width=3in]{figs/ww_logLs.png}
+\includegraphics[width=3in]{figs_final/ww_likes.png}
 \caption{For models built using tICA, we were able to compute volumes as the dimensionality was low (A). These likelihoods were qualitatively similar to the MVN likelihoods (B). Because the MVN likelihood is easy to compute, we can use it to calculate the likelihood of a model clustered using the RMSD distance metric (C). Our likelihood indicates we should construct a model with 5000 states in the RMSD metric, whereas previous studies used a model with 26,000 states \cite{Lane2011Markov}.}
 \label{fig:ww}
 \end{figure}
