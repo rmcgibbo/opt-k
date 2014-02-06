@@ -26,7 +26,7 @@ The title ``Optimal parameter selection...'' does not reflect the work contained
 \end{quote}
 
 \begin{quote}
-"As such, the eigenvalues, and correspondingly the relaxation timescales, should remain constant as the lag time increases."  The eigenvalues of which matrix should remain constant with what parameter?  The eigenvalues of T(t) actually change with t.  Perhaps you mean the eigenvalues of some implied rate matrix K where T(t) = exp[Kt]?
+``As such, the eigenvalues, and correspondingly the relaxation timescales, should remain constant as the lag time increases.''  The eigenvalues of which matrix should remain constant with what parameter?  The eigenvalues of $T(t)$ actually change with t.  Perhaps you mean the eigenvalues of some implied rate matrix $K$ where $T(t) = exp[Kt]$?
 \end{quote}
 
 \begin{quote}
@@ -54,11 +54,11 @@ Eq. 3: Rewrite as $P(x|s)$ instead of $P(x_t|s(x_t))$, since these are supposed 
 \end{quote}
 
 \begin{quote}
-"A more tractable alternative is a Gaussian emission model..."  Why is this even anticipated to be a good model?  Won't it force your states to have gaussianlike clusters in them?  And isn't a gaussian infinite in support, while you SPECIFICALLY REQUIRE the state membership functions to have finite support because they form a crisp partitioning?  Why are you not truncating this model at the state boundaries, which would affect your normalization of the probability density in Eq 5.  This inconsistency seems like a major flaw in this work.
+``A more tractable alternative is a Gaussian emission model...''  Why is this even anticipated to be a good model?  Won't it force your states to have gaussianlike clusters in them?  And isn't a gaussian infinite in support, while you SPECIFICALLY REQUIRE the state membership functions to have finite support because they form a crisp partitioning?  Why are you not truncating this model at the state boundaries, which would affect your normalization of the probability density in Eq 5.  This inconsistency seems like a major flaw in this work.
 \end{quote}
 
 \begin{quote}
-"We assume that the overlaps are small..."  Is this enforced by some condition on sigma and mu for neighboring states?  Has this assumption been checked?  This is certainly, absolutely, positively not the case for even the simple model in Fig 3A.
+``We assume that the overlaps are small...''  Is this enforced by some condition on sigma and mu for neighboring states?  Has this assumption been checked?  This is certainly, absolutely, positively not the case for even the simple model in Fig 3A.
 \end{quote}
 
 \begin{quote}
@@ -66,7 +66,7 @@ On choice of emission probabilities, an obvious question: Why not choose $P(x|i)
 \end{quote}
 
 \begin{quote}
-"Unfortunately such approaches are intractable for problems of the size encountered in biomolecular simulations because of the need to integrate over all possible Markov models with a given number of parameters."  Is this really intractable?  That's a very strong claim.  Perhaps it is just difficult or complex, since no evidence of intractability is presented?
+``Unfortunately such approaches are intractable for problems of the size encountered in biomolecular simulations because of the need to integrate over all possible Markov models with a given number of parameters.''  Is this really intractable?  That's a very strong claim.  Perhaps it is just difficult or complex, since no evidence of intractability is presented?
 \end{quote}
 
 \begin{quote}
@@ -83,7 +83,7 @@ On choice of emission probabilities, an obvious question: Why not choose $P(x|i)
 \end{quote}
 
 \begin{quote}
-* ``The first trajectory was clustered using the k-centers clustering algorithm...'' Cite.  What parameters were used for clustering?
+``The first trajectory was clustered using the k-centers clustering algorithm...'' Cite.  What parameters were used for clustering?
 \end{quote}
 
 \begin{quote}
@@ -99,19 +99,19 @@ according to the three methods" Which three methods exactly?
 \end{quote}
 
 \begin{quote}
-Fig. 2: This figure is way too small.  What is "score"?  Is this a log likelihood?  Is lower or higher score representative of lower or higher likelihood?  The numbers/units of likelihood are actually meaningful, and should be shown.  What is the difference between "volume" and "Gaussian"?
+Fig. 2: This figure is way too small.  What is ``score''?  Is this a log likelihood?  Is lower or higher score representative of lower or higher likelihood?  The numbers/units of likelihood are actually meaningful, and should be shown.  What is the difference between "volume" and "Gaussian"?
 \end{quote}
 
 \begin{quote}
-Fig. 2 caption: "form the boundaries of the optimal window"  Why is this region the optimal window?  It looks like the optimal BIC window is 100-200.  And why not just pick THE single optimal number of states?  Why do you need a window that contains highly nonoptimal models?
+Fig. 2 caption: ``form the boundaries of the optimal window''  Why is this region the optimal window?  It looks like the optimal BIC window is 100-200.  And why not just pick THE single optimal number of states?  Why do you need a window that contains highly nonoptimal models?
 \end{quote}
 
 \begin{quote}
-"The AIC and BIC penalize the larger state models much more than the test set log-likelihood..."  Why is this discrepancy so large?  Doesn't this suggest AIC/BIC are unsuitable if they are not representative of the actual out-of-sample performance on the test set?
+``The AIC and BIC penalize the larger state models much more than the test set log-likelihood...''  Why is this discrepancy so large?  Doesn't this suggest AIC/BIC are unsuitable if they are not representative of the actual out-of-sample performance on the test set?
 \end{quote}
 
 \begin{quote}
-"causes the transition matrix to suffer"  Clarify?
+``causes the transition matrix to suffer''  Clarify?
 \end{quote}
 
 \begin{quote}
@@ -160,7 +160,7 @@ The model has the training data set as its support rather than phase space, whic
 \end{quote}
 
 \begin{quote}
-``but is intractble in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation"  Be clear that *exact* volume computation is intractable in very high dimension due to the complexity of all known algorithms.  Monte Carlo schemes (such as the one used here, or methods such as [http://www.cs.elte.hu/~lovasz/vol4-focs-tr.pdf]) allow the approximation of this volume.  However, it's also worth noting that the Gaussian model you propose in Eq. 4 is ALSO INTRACTABLE for EXACTLY THE SAME REASON, since you do not compute the true normalizing constant for essentially identical reasons of computational tractability in high dimension.  As such, phrases such as "A more tractable alternative is a Gaussian emission model.." are entirely disingenuous and misleading.
+``but is intractble in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation''  Be clear that *exact* volume computation is intractable in very high dimension due to the complexity of all known algorithms.  Monte Carlo schemes (such as the one used here, or methods such as [http://www.cs.elte.hu/~lovasz/vol4-focs-tr.pdf]) allow the approximation of this volume.  However, it's also worth noting that the Gaussian model you propose in Eq. 4 is ALSO INTRACTABLE for EXACTLY THE SAME REASON, since you do not compute the true normalizing constant for essentially identical reasons of computational tractability in high dimension.  As such, phrases such as "A more tractable alternative is a Gaussian emission model.." are entirely disingenuous and misleading.
 \end{quote}
 
 \begin{quote}
