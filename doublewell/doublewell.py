@@ -111,6 +111,8 @@ class MarkovStateModel1D(object):
         self.grid_ = None
         self.starting_states_ = None
 
+        self._n_parameters = (n_states * (n_states + 1) / 2) - 1
+
     def fit(self, X):
         """
 
@@ -172,6 +174,40 @@ class MarkovStateModel1D(object):
             return emission_log_likelihood
         return transition_log_likelihood + emission_log_likelihood
 
+    def bic(self, X):
+        """
+        Bayesian information criterion for the current model fit
+        and the proposed data
+
+        Parameters
+        ----------
+        X : list of np.ndarrays
+            Each array is a 1D trajectory through phase space. This should
+            already be subsampled to your discretization interval / lag time
+            of choice.
+
+        Returns
+        -------
+        bic: float (the lower the better)
+        """
+        return -2 * self.loglikelihood(X) + self._n_parameters * np.log(sum(len(xx) for xx in X))
+
+    def aic(self, X):
+        """Akaike information criterion for the current model fit
+        and the proposed data
+
+        Parameters
+        ----------
+        X : list of np.ndarrays
+            Each array is a 1D trajectory through phase space. This should
+            already be subsampled to your discretization interval / lag time
+            of choice.
+
+        Returns
+        -------
+        aic: float (the lower the better)
+        """
+        return -2 * self.loglikelihood(X) + 2 * self._n_parameters
 
     def logevidence(self, terms='all'):
 
@@ -208,7 +244,7 @@ class MarkovStateModel1D(object):
         # this factors out when we integrate over model parameters
         # since the we're NOT integrating over the state-space parameters
         # as they're fixed given the number of states
-        if terms in ['emission' or 'all']:
+        if terms in ['emission', 'all']:
             emission_log_likelihood = - np.log(self.grid_[1]-self.grid_[0]) * \
                                       (np.sum(self.countsmats_) + len(self.countsmats_))
 
@@ -241,8 +277,10 @@ def main():
     model = MarkovStateModel1D(n_states=2)
     t = [trajectories[i][::100] for i in range(2)]
     model.fit(t)
-    print 'loglikelihood', model.loglikelihood(t, 'emission')
-    print 'evidence', model.logevidence('emission')
+    print 'loglikelihood', model.loglikelihood(t)
+    print 'evidence', model.logevidence()
+    print 'bic', -model.bic(t)/2
+    print 'aic', -model.aic(t)/2
 
 
 def test_logevidence():
