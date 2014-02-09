@@ -24,7 +24,6 @@ cdef class MAPTransmat:
 
     def __cinit__(self, n_states):
         self.n_states = int(n_states)
-        cdef string python_lib = find_python_lib()
         cdef string lapack_lite_lib = os.path.join(np.linalg.__path__[0], 'lapack_lite.so')
         self.cycleMatrixBuilder = new CycleMatrixBuilder(n_states, lapack_lite_lib)
 
@@ -85,31 +84,3 @@ cdef class MAPTransmat:
         term4 = self.cycleMatrixBuilder.logSqrtDetCycleMatrix(&u[0]);
         
         return term4;
-
-
-def find_python_lib():
-    """Find the python library (libpython.so / libpython.dylib) for the
-    current process. This doesn't support windows.
-
-    Adapted from PySide's setup.py script
-    """
-    py_version = "%s.%s" % (sys.version_info[0], sys.version_info[1])
-    py_libdir = os.path.join(sys.prefix, "lib")
-
-    lib_exts = ['.so', '.so.1']
-    if sys.platform == 'darwin':
-        lib_exts.append('.dylib')
-    if sys.version_info[0] > 2:
-        lib_suff = getattr(sys, 'abiflags', None)
-    else: # Python 2
-        lib_suff = ''
-
-    libs_tried = []
-    for lib_ext in lib_exts:
-        lib_name = "libpython%s%s%s" % (py_version, lib_suff, lib_ext)
-        py_library = os.path.join(py_libdir, lib_name)
-        if os.path.exists(py_library):
-            return py_library
-        libs_tried.append(py_library)
-
-    raise ValueError('Could not find libpython. Tried looking at %s' % ','.join(libs_tried))
