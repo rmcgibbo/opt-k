@@ -1,6 +1,59 @@
 import numpy as np
 import scipy.special
 from msmbuilder import MSMLib as msmlib
+__all__ = ['GridMarkovStateModel']
+
+
+def _log_transmat_evidence(countsmat, starting_state, prior):
+    """Compute the log evidence of a Markov model given directed transition counts
+    
+    This function implements Eq. 51 from [1], using a symmetric prior (all
+    :math:`\alpha_e`) are equal
+    
+    Parameters
+    ----------
+    countsmat : np.ndarray
+        Dense matrix of directed transition counts
+    starting_state : int
+        The initial state of the chain
+    prior : float
+        Strength of the symmetric prior. This is the starting weight on each
+        edge in the ERRW.
+    
+    References
+    ----------
+    .. [1] Diaconis, Persi, and Silke WW Rolles. "Bayesian analysis for
+           reversible Markov chains." The Annals of Statistics 34.3 (2006):
+           1270-1292.
+    """
+    
+    def logpochhammer(a, n):
+        "Natural logarithm of the Pochhammer symbol (a)_n"
+        return scipy.special.gammaln(a + n) - scipy.special.gammaln(a)
+
+    countsmat = np.asarray(countsmat)
+    n_states = countsmat.shape[0]
+    k_v = np.sum(countsmat, axis=1)
+    k_e = countsmat + countsmat.T
+
+    numerator1 = 0
+    for e in zip(*np.triu_indices(n_states, 1)):
+        # e in E\E_loop
+        numerator1 += logpochhammer(prior, k_e[e])
+
+    numerator2 = 0
+    for k_e in np.diag(k_e):
+        # e in E_loop
+        numerator2 += (k_e/2.0) * np.log(2.0) + \
+                      logpochhammer(prior / 2.0, k_e/2.0)
+
+    denominator = 0
+    for v in range(n_states):
+        offset = int(v != starting_state)
+        denominator += (k_v[v]) * np.log(2.0) + logpochhammer((
+            prior * n_states + offset) / 2.0, k_v[v])
+
+    return (numerator1 + numerator2 - denominator)
 
 
 class GridMarkovStateModel(object):
@@ -207,10 +260,6 @@ class GridMarkovStateModel(object):
             raise ValueError("terms must be one ['transmat', 'emission', 'all']")
         self._initialize_sequences(X)
 
-        def logpochhammer(a, n):
-            "Natural logarithm of the Pochhammer symbol (a)_n"
-            return scipy.special.gammaln(a + n) - scipy.special.gammaln(a)
-
         logevidence_transmat = 0
         emission_log_likelihood = 0
         for trajectory in X:
@@ -218,27 +267,8 @@ class GridMarkovStateModel(object):
             starting_state = labels[0]
             countsmat = msmlib.get_counts_from_traj(labels, n_states=self.n_states).todense()
 
-            k_v = np.sum(countsmat, axis=1)
-            k_e = countsmat + countsmat.T
-
-            numerator1 = 0
-            for e in zip(*np.triu_indices(self.n_states, 1)):
-                # e in E\E_loop
-                numerator1 += logpochhammer(self.transmat_prior, k_e[e])
-
-            numerator2 = 0
-            for k_e in np.diag(k_e):
-                # e in E_loop
-                numerator2 += (k_e/2.0) * np.log(2.0) + \
-                              logpochhammer(self.transmat_prior / 2.0, k_e/2.0)
-
-            denominator = 0
-            for v in range(self.n_states):
-                offset = int(v != starting_state)
-                denominator += (k_v[v]) * np.log(2.0) + logpochhammer((
-                    self.transmat_prior * self.n_states + offset) / 2.0, k_v[v])
-
-            logevidence_transmat += (numerator1 + numerator2 - denominator)
+            logevidence_transmat += _log_transmat_evidence(
+                countsmat, starting_state, self.transmat_prior)
 
             # this factors out when we integrate over model parameters
             # since the we're NOT integrating over the state-space parameters
