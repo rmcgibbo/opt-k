@@ -5,10 +5,17 @@
 #include <iostream>
 #include <dlfcn.h>
 #include "cycledeterminant.hpp"
+
+extern "C" {
+    // LAPACK LU decomposition, which we use to compute the determinant of our
+    // matrix
+    int dgetrf_(const int*, const int *, const double *, const int *, int *, int *);
+}
+
 namespace CycleDeterminant {
 
 
-CycleMatrixBuilder::CycleMatrixBuilder(const int n_states, std::string lapack_lite_lib)
+CycleMatrixBuilder::CycleMatrixBuilder(const int n_states)
     : n_states_(n_states),
       n_cycles_(0)
 {
@@ -22,55 +29,51 @@ CycleMatrixBuilder::CycleMatrixBuilder(const int n_states, std::string lapack_li
         }
     }
     n_cycles_ = cycles_.size();
-
-    //void* pyhandle = dlopen(python_lib.c_str(),  RTLD_LAZY | RTLD_LOCAL);
-    //if (!pyhandle)
-    //    throw std::runtime_error(dlerror());
-    lapack_lite = dlopen(lapack_lite_lib.c_str(), RTLD_LAZY | RTLD_LOCAL);
-    if (!lapack_lite)
-        throw std::runtime_error(dlerror());
-    //dlclose(pyhandle);
-    dgetrf_ = (int (*)(const int*, const int *, const double *, const int *, int *, int *)) dlsym(lapack_lite, "dgetrf_");
-    if (!dgetrf_)
-        throw std::runtime_error(dlerror());
 }
 
 CycleMatrixBuilder::~CycleMatrixBuilder() {
-    dlclose(lapack_lite);
 }
 
-double CycleMatrixBuilder::logSqrtDetCycleMatrix(const double* u) {
+double CycleMatrixBuilder::logSqrtDetCycleMatrix(const double* x) {
     std::vector<double> A(n_cycles_ * n_cycles_);
     for (int i = 0; i < n_cycles_; i++) {
         for (int j = 0; j < n_cycles_; j++) {
             if (i == j) {
                 A[i*n_cycles_ + i] = \
-                    exp(-u[cycles_[i][0]]) +  exp(-u[cycles_[i][1]]) +  exp(-u[cycles_[i][2]]);
+                    exp(-x[cycles_[i][0]]) +  exp(-x[cycles_[i][1]]) +  exp(-x[cycles_[i][2]]);
             } else {
-                for (int x = 0; x < 2; x++)
-                    for (int y = 0; y < 2; y++)
-                        if (cycles_[i][x] == cycles_[j][y])
-                            A[i*n_cycles_ + j] += exp(-u[cycles_[i][x]]);
-                for (int x = 0; x < 2; x++) {
-                    if (cycles_[i][x] == cycles_[j][2])
-                        A[i*n_cycles_ + j] -= exp(-u[cycles_[i][x]]);
-                    if (cycles_[i][2] == cycles_[j][x])
-                        A[i*n_cycles_ + j] -= exp(-u[cycles_[j][x]]);
+                for (int a = 0; a < 2; a++)
+                    for (int b = 0; b < 2; b++)
+                        if (cycles_[i][a] == cycles_[j][b])
+                            A[i*n_cycles_ + j] += exp(-x[cycles_[i][a]]);
+                for (int a = 0; a < 2; a++) {
+                    if (cycles_[i][a] == cycles_[j][2])
+                        A[i*n_cycles_ + j] -= exp(-x[cycles_[i][a]]);
+                    if (cycles_[i][2] == cycles_[j][a])
+                        A[i*n_cycles_ + j] -= exp(-x[cycles_[j][a]]);
                 }
             }
         }
     }
-    //
-    // cout << "[ ";
+    
+    // std::cout << "logweights: [ ";
+    // for (int i = 0; i < n_states_; i++)
+    //     std::cout << x[i] << " ";
+    
+        
+    // std::cout << "]\n A(x) [ ";
     // for (int i = 0; i < n_cycles_; i++) {
-    //     cout << "[ ";
+    //     std::cout << "[ ";
     //     for (int j = 0; j < n_cycles_; j++)
     //         std::cout << A[i*n_cycles_ + j] << ", ";
     //     std::cout << "]," << std::endl;
     // }
-    // cout << "]";
+    // std::cout << "]";
 
-    return 0.5*logdet(A);
+    double value = 0.5*logdet(A);
+    if (value != value)
+        throw std::overflow_error("NaN determinant of A(x) in cycledeterminant.cpp");
+    return value;
 }
 double CycleMatrixBuilder::logdet(std::vector<double> const& A) {
     int N = round(sqrt(A.size()));
@@ -84,11 +87,11 @@ double CycleMatrixBuilder::logdet(std::vector<double> const& A) {
     int neg = 0;
     double logdet = 0.0;
     for (int c1 = 0; c1 < N; c1++) {
-      logdet += log(std::abs(A[N*c1 + c1]));
-      if (A[N*c1 + c1] < 0) neg = !neg;
-      if (pivots[c1] != (c1+1)) neg = !neg;
+        logdet += log(std::abs(A[N*c1 + c1]));
+        if (A[N*c1 + c1] < 0) neg = !neg;
+        if (pivots[c1] != (c1+1)) neg = !neg;
     }
-
+    
     return logdet;
 }
 
