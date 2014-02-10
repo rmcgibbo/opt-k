@@ -6,10 +6,10 @@ __all__ = ['GridMarkovStateModel']
 
 def _log_transmat_evidence(countsmat, starting_state, prior):
     """Compute the log evidence of a Markov model given directed transition counts
-    
+
     This function implements Eq. 51 from [1], using a symmetric prior (all
     :math:`\alpha_e`) are equal
-    
+
     Parameters
     ----------
     countsmat : np.ndarray
@@ -19,14 +19,14 @@ def _log_transmat_evidence(countsmat, starting_state, prior):
     prior : float
         Strength of the symmetric prior. This is the starting weight on each
         edge in the ERRW.
-    
+
     References
     ----------
     .. [1] Diaconis, Persi, and Silke WW Rolles. "Bayesian analysis for
            reversible Markov chains." The Annals of Statistics 34.3 (2006):
            1270-1292.
     """
-    
+
     def logpochhammer(a, n):
         "Natural logarithm of the Pochhammer symbol (a)_n"
         return scipy.special.gammaln(a + n) - scipy.special.gammaln(a)
@@ -166,7 +166,8 @@ class GridMarkovStateModel(object):
                 scipy.sparse.csr_matrix(countsmat.todense() + 1e-20))
             self.transmat_ = msmlib.estimate_transition_matrix(rc)
         else:
-            raise NotImplementedError('Still working on MAP')
+            #_map_transmat.MAPTransmat(N_STATES).fit(A, 1, options={'disp': True, 'maxiter': 10000})
+            #raise NotImplementedError('Still working on MAP')
 
     def loglikelihood(self, X, terms='all'):
         """Log-likelihood of the current model fit and the proposed data
