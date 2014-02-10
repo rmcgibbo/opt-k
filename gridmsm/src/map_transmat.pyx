@@ -46,9 +46,8 @@ cdef class MAPTransmat:
         # u[edge_indices] are entries of u corresponding to non-self transitions
         self.loop_indices = np.where(self.triu_indices[0] == self.triu_indices[1])[0]
         self.edge_indices = np.where(self.triu_indices[0] != self.triu_indices[1])[0]
-        
 
-    def fit(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior):
+    def fit(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, method='cobyla', options={}):
         """Maximum a-posteriori reversible transition matrix given a set of
         directed transition counts and a symmetric edge-reinforced random walk
         prior.
@@ -56,10 +55,27 @@ cdef class MAPTransmat:
         Parameters
         ----------
         countsmat : np.ndarray
-            Dense matrix of directed transition counts
+            Dense matrix of (directed) transition counts. countsmat[i,j] gives
+            the number of observed transitions from state `i` to state `j`.
         prior : float
             Strength of the symmetric prior. This is the starting weight on each
-            edge in the ERRW.
+            edge in the ERRW, denoted by :math:`a` in Eq. 13 of Diaconis and 
+            Rolles (2006). In that paper, :math:`a` is a vector with a potentially
+            different value for every edge. This implementation only supports the
+            symmetric prior, where every edge has the same prior strength. Note,
+            if prior <= 0, we will just do the MLE estimate.
+        method : str
+            Optimization method. This string is passed directly to `scipy.optimize.minimize`,
+            and can be any of the supported scipy optimization methods.  See
+            the scipy documentation for details.
+        options : dict
+            Options for the optimizer. These are passed directly to `scipy.optimize.minimize`,
+            and can be used to control extra printing, the maximum number of
+            function evaluations, etc. See the scipy documentation for details.
+            
+        See Also
+        --------
+        scipy.optimize.minimize
         """
         cdef np.ndarray[ndim=1, dtype=DTYPE_T] symcounts, symcounts_double_loop
         cdef np.ndarray[ndim=1, dtype=DTYPE_T] rowsums
@@ -83,15 +99,8 @@ cdef class MAPTransmat:
         u0 = np.log(symcounts_double_loop + PADDING)
 
         result = scipy.optimize.minimize(self.objective, u0,
-           args=(symcounts, rowsums, logrowsums, prior), method='COBYLA')
+           args=(symcounts, rowsums, logrowsums, prior), method=method, options=options)
 
-        print('message', result['message'])
-        print('initial weights', np.sort(np.exp(u0)))
-        print('initial objective', self.objective(u0, symcounts, rowsums, logrowsums, prior))
-        print('final weights', np.exp(result['x']))
-        print('final objective', self.objective(result['x'], symcounts, rowsums, logrowsums, prior))
-        
-        
         # reconstruct the final counts from the weights. avoid
         # double-counting the diagonal
         reversible_counts = np.zeros((self.n_states, self.n_states))
@@ -103,14 +112,17 @@ cdef class MAPTransmat:
         return transmat
 
     def objective(self, u, symcounts, rowsums, logrowsums, priorstrength):
+        """Objective function
+        """
         negative_loglikelihood = reversible_transmat_likelihood(u, symcounts, rowsums, logrowsums)
         if priorstrength > 0:
             negative_logprior = self.reversible_transmat_log_prior(u, priorstrength)
         else:
             negative_logprior = 0
 
-        print('loglikelihood=%f, logprior=%f, value=%f' % (-negative_loglikelihood,
-            -negative_logprior, -(negative_loglikelihood + negative_logprior)))
+        # print('loglikelihood=%f, logprior=%f, value=%f' %
+        #     (-negative_loglikelihood, -negative_logprior,
+        #     -(negative_loglikelihood + negative_logprior)))
         return negative_loglikelihood + negative_logprior
 
     def reversible_transmat_log_prior(self, np.ndarray[ndim=1, dtype=DTYPE_T] u, DTYPE_T prior):
@@ -159,6 +171,21 @@ cdef class MAPTransmat:
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef np.ndarray[ndim=1, dtype=DTYPE_T] logX_from_u(np.ndarray[ndim=1, dtype=DTYPE_T] u, int n_states):
+    """Calculate the log of the transition probabilities along each edge. These
+    are the variables x in Diaconis and  Rolles (2006), and T in the MSMBuilder
+    MLE notes.
+    
+    Parameters
+    ----------
+    u : np.array, ndim=1
+        The free parameters. These are the log of the upper triangular
+        counts matrix entries in symmetric storage.
+
+    Returns
+    -------
+    logX : np.array, ndim=1
+        The log of the transition probabilities, also in symmetric storage.
+    """
     cdef np.ndarray[ndim=1, dtype=DTYPE_T] q = logsymsumexp(u, n_states)
     cdef np.ndarray[ndim=1, dtype=DTYPE_T] logX = np.zeros(len(u), dtype=DTYPE)
     
