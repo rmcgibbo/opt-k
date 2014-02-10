@@ -55,20 +55,6 @@ double CycleMatrixBuilder::logSqrtDetCycleMatrix(const double* x) {
             }
         }
     }
-    
-    // std::cout << "logweights: [ ";
-    // for (int i = 0; i < n_states_; i++)
-    //     std::cout << x[i] << " ";
-    
-        
-    // std::cout << "]\n A(x) [ ";
-    // for (int i = 0; i < n_cycles_; i++) {
-    //     std::cout << "[ ";
-    //     for (int j = 0; j < n_cycles_; j++)
-    //         std::cout << A[i*n_cycles_ + j] << ", ";
-    //     std::cout << "]," << std::endl;
-    // }
-    // std::cout << "]";
 
     double value = 0.5*logdet(A);
     if (value != value)
