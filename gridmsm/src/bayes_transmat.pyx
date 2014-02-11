@@ -12,6 +12,7 @@ from mixtape._reversibility import reversible_transmat_likelihood, logsymsumexp
 cimport cython
 cimport numpy as np
 from libcpp.string cimport string
+from libc.math cimport exp
 
 #-----------------------------------------------------------------------------
 # Globals
@@ -30,7 +31,7 @@ cdef extern from "cycledeterminant.hpp" namespace "CycleDeterminant":
 #-----------------------------------------------------------------------------
 
 
-cdef class MAPTransmat:
+cdef class BayesTransmat:
     cdef int n_states
     cdef tuple triu_indices
     cdef np.ndarray loop_indices
@@ -47,7 +48,83 @@ cdef class MAPTransmat:
         self.loop_indices = np.where(self.triu_indices[0] == self.triu_indices[1])[0]
         self.edge_indices = np.where(self.triu_indices[0] != self.triu_indices[1])[0]
 
-    def fit(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, method='cobyla', options={}):
+    def sample(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, int n_iters, int thin=1):
+        """Sample from the posterior distribution over reversible Markov transition matrices
+        given a set of directed transition counts and a symmetric edge-reinforced random walk
+        prior
+        
+        Parameters
+        ----------
+        """
+        cdef int i
+        cdef double acceptance_prob
+        cdef np.ndarray[ndim=3, dtype=DTYPE_T] transmats
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] uniform, posteriorA
+        
+        transmats = np.empty((int(n_iters / thin), self.n_states, self.n_states))
+        uniform = np.random.random(n_iters)
+
+        # symmetrized counts, with the loops counted in both directions
+        posteriorA = (countsmat + countsmat.T)[self.triu_indices] + prior
+
+        logX = np.ones_like(posteriorA)
+        logX_new = logX.copy()
+
+        logP_X = self.logposterior(logX, posteriorA)
+
+        for i in range(n_iters):
+            reject_automatically = False
+            logX_new = logX + np.random.randn(len(logX))            
+            try:
+                logP_X_new = self.logposterior(logX_new, posteriorA)
+            except RuntimeError:
+                reject_automatically = True
+
+            if not reject_automatically:
+                acceptance_prob = min(1.0, exp(logP_X_new - logP_X))
+                if uniform[i] < acceptance_prob:
+                    print('accept')
+                    logX = logX_new
+                    logP_X = logP_X_new
+
+            if (i % thin == 0):
+                t = np.zeros((self.n_states, self.n_states))
+                t[self.triu_indices] = np.exp(logX)
+                t[np.diag_indices(self.n_states)] -= 0.5*np.diag(t)
+                transmats[i//thin] = t + t.T
+
+        return transmats
+            
+    def logposterior(self, np.ndarray[ndim=1, dtype=DTYPE_T] logX, np.ndarray[ndim=1, dtype=DTYPE_T] a):
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] logX_edge = logX[self.edge_indices]
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] logX_loop = logX[self.loop_indices]
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] a_loop = a[self.loop_indices]
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] a_edge = a[self.edge_indices]
+
+        # \log [ \product_{e \in E\E_loop} x_e^{a_e - 1/2} ]
+        term1 = np.sum((a_edge - 0.5) * logX_edge)
+
+        # \log [ \product_{e \in E_loop} x_e^{a_e/2 - 1} ]
+        term2 = np.sum((a_loop/2 - 1) * logX_loop)
+
+        logX_v = logsymsumexp(logX, self.n_states)
+        a_v = np.exp(logsymsumexp(np.log(a), self.n_states))
+        # \log [ \product_V x_v^{(a_v + 1)/2} ]
+        term3 = np.sum((a_v + 1)/2 * logX_v)
+
+        # The log sqrt determinant of matrix A(x). Eq 12.
+        try:
+            term4 = self.cycleMatrixBuilder.logSqrtDetCycleMatrix(&logX[0]);
+        except OverflowError:
+            term4 = self.n_states * np.log(np.finfo(np.double).max)
+
+        # Note that we're MISSING the normalization constant Z from Eq. 14. This
+        # is alright since it's not a function of the weights, so it's just
+        # an additive constant
+        return term1 + term2 - term3 + term4
+        
+
+    def fit_map(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, method='cobyla', options={}):
         """Maximum a-posteriori reversible transition matrix given a set of
         directed transition counts and a symmetric edge-reinforced random walk
         prior.
@@ -84,8 +161,7 @@ cdef class MAPTransmat:
             The maximum a-posteriori transition matrix.
         """
         cdef np.ndarray[ndim=1, dtype=DTYPE_T] symcounts, symcounts_double_loop
-        cdef np.ndarray[ndim=1, dtype=DTYPE_T] rowsums
-        cdef np.ndarray[ndim=1, dtype=DTYPE_T] logrowsums
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] rowsums, logrowsums
         if countsmat.shape[0] != self.n_states or countsmat.shape[1] != self.n_states:
             raise TypeError('counsmat must be %d by %d' % (self.n_states, self.n_states))
 

@@ -286,7 +286,7 @@ def main():
 def test_logevidence():
     model = MarkovStateModel1D(n_states=4)
     model.countsmats_ = [np.array([
-        [91, 160, 261, 108],
+
         [213, 351, 161, 249],
         [251, 224, 388, 201],
         [66, 239, 254, 152]])]
