@@ -148,13 +148,17 @@ class GridMarkovStateModel(object):
             else:
                 countsmat = countsmat + thesecounts
 
-        return np.asarray(countsmat.todense(), dtype=np.float64)
+        np.random.seed(42)
+        return (100*np.eye(4) + np.random.randint(10, size=(4,4))).astype(np.float64)
+        #return np.asarray(countsmat.todense(), dtype=np.float64)
 
-    def sample(self, X, n_iters, thin=1):
+    def sample(self, X, n_iters, thin=1, sigma=0.1):
+        """Sample from the posterior
+        """
         counts =  self._countsmat(X)
         with warnings.catch_warnings():
             warnings.simplefilter('error')
-            return _bayes_transmat.BayesTransmat(self.n_states).sample(counts, self.prior, n_iters, thin)
+            return _bayes_transmat.BayesTransmat(self.n_states).sample(counts, self.prior, n_iters, thin, sigma)
 
 
     def fit(self, X, method='mle'):
@@ -190,6 +194,8 @@ class GridMarkovStateModel(object):
         else:
             self.transmat_ = _bayes_transmat.BayesTransmat(self.n_states).\
                              fit_map(counts, 1, options={'disp': True, 'maxiter': 10000})
+
+        return self
 
     def loglikelihood(self, X, terms='all'):
         """Log-likelihood of the current model fit and the proposed data

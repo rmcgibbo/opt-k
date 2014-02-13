@@ -4,7 +4,7 @@ import mdtraj as md
 import matplotlib.pyplot as pp
 from gridmsm import GridMarkovStateModel
 
-N_BINS = np.arange(2, 7)
+N_BINS = [2] #np.arange(2, 7)
 DATA_GLOB = '/home/rmcgibbo/local/msmbuilder/Tutorial/XTC/RUN*/*.xtc'
 TOP = '/home/rmcgibbo/local/msmbuilder/Tutorial/native.pdb'
 
@@ -14,7 +14,7 @@ for fn in glob(DATA_GLOB):
     _, phi = md.compute_phi(t)
     _, psi = md.compute_psi(t)
     X.append(np.hstack((phi, psi)))
-
+    break
 
 akaike = np.empty(len(N_BINS))
 schwarz = np.empty(len(N_BINS))
@@ -23,17 +23,26 @@ loglikelihood = np.empty(len(N_BINS))
 n_states = np.empty(len(N_BINS))
 for i, n in enumerate(N_BINS):
     model = GridMarkovStateModel(n_bins=n, min=-(np.pi+1e-5),
-                                 max=np.pi+1e-5, prior=1)
+                                 max=np.pi+1e-5, prior=0.0000001)
     logevidence[i] = model.logevidence(X)
-    model.fit(X)
+    print model.fit(X, method='mle').transmat_
+    print model.fit(X, method='map').transmat_
+    exit(1)
+ 
+
     akaike[i] = -0.5*model.aic(X)
     schwarz[i] = -0.5*model.bic(X)
     loglikelihood[i] = model.loglikelihood(X)
     n_states[i] = model.n_states
 
-    model.sample(X, 10)
+#pp.hist(-1/np.log(eigs[:,-2]), bins=20)
+#pp.title('rate = %s' % rate)
+#pp.savefig('3.png')
+#print('acceptance rate', rate)
+#pp.show()
+#exit(1)
 
-
+pp.figure()
 pp.plot(n_states, logevidence, label='Log Evidence', lw=2)
 pp.plot(n_states, loglikelihood, label='MLE Log Likelihood', lw=2)
 pp.plot(n_states, schwarz, label='MLE Schwarz Criterion', lw=2)

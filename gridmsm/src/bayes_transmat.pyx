@@ -48,52 +48,58 @@ cdef class BayesTransmat:
         self.loop_indices = np.where(self.triu_indices[0] == self.triu_indices[1])[0]
         self.edge_indices = np.where(self.triu_indices[0] != self.triu_indices[1])[0]
 
-    def sample(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, int n_iters, int thin=1):
+    def sample(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, int n_iters, int thin=1, float sigma=0.1):
         """Sample from the posterior distribution over reversible Markov transition matrices
         given a set of directed transition counts and a symmetric edge-reinforced random walk
         prior
         
         Parameters
         ----------
+
+        Returns
+        -------
+        transmats : np.ndarray, shape=(n_transmats, n_states, n_states)
+        acceptance_rate : float
         """
         cdef int i
+        cdef DTYPE_T logP_u, logP_u_new
         cdef double acceptance_prob
         cdef np.ndarray[ndim=3, dtype=DTYPE_T] transmats
-        cdef np.ndarray[ndim=1, dtype=DTYPE_T] uniform, posteriorA
-        
+        cdef np.ndarray[ndim=1, dtype=DTYPE_T] uniform, posteriorA, u, u_new
+        if thin <= 0:
+            raise ValueError('invalid thin: %d' % thin)
+
         transmats = np.empty((int(n_iters / thin), self.n_states, self.n_states))
         uniform = np.random.random(n_iters)
 
         # symmetrized counts, with the loops counted in both directions
         posteriorA = (countsmat + countsmat.T)[self.triu_indices] + prior
 
-        logX = np.ones_like(posteriorA)
-        logX_new = logX.copy()
+        u = np.log(posteriorA)
+        u_new = u.copy()
 
-        logP_X = self.logposterior(logX, posteriorA)
+        logP_u = self.logposterior(logX_from_u(u, self.n_states), posteriorA)
 
+        cdef int n_accept = 0
         for i in range(n_iters):
             reject_automatically = False
-            logX_new = logX + np.random.randn(len(logX))            
+            u_new = u + sigma*np.random.randn(len(u))            
             try:
-                logP_X_new = self.logposterior(logX_new, posteriorA)
+                logP_u_new = self.logposterior(logX_from_u(u, self.n_states), posteriorA)
             except RuntimeError:
                 reject_automatically = True
 
             if not reject_automatically:
-                acceptance_prob = min(1.0, exp(logP_X_new - logP_X))
+                acceptance_prob = min(1.0, exp(logP_u_new - logP_u))
                 if uniform[i] < acceptance_prob:
-                    print('accept')
-                    logX = logX_new
-                    logP_X = logP_X_new
+                    n_accept += 1
+                    u = u_new
+                    logP_u = logP_u_new
 
             if (i % thin == 0):
-                t = np.zeros((self.n_states, self.n_states))
-                t[self.triu_indices] = np.exp(logX)
-                t[np.diag_indices(self.n_states)] -= 0.5*np.diag(t)
-                transmats[i//thin] = t + t.T
+                transmats[i//thin] = transmat_from_u(u, self.n_states)
 
-        return transmats
+        return transmats, n_accept / n_iters
             
     def logposterior(self, np.ndarray[ndim=1, dtype=DTYPE_T] logX, np.ndarray[ndim=1, dtype=DTYPE_T] a):
         cdef np.ndarray[ndim=1, dtype=DTYPE_T] logX_edge = logX[self.edge_indices]
@@ -123,8 +129,21 @@ cdef class BayesTransmat:
         # an additive constant
         return term1 + term2 - term3 + term4
         
+    def fit_map(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior,
+                method='cobyla', options={}):
+        """
+        """
+        # symmetrized counts, with the loops counted in both directions
+        a = (countsmat + countsmat.T)[self.triu_indices] + prior
+        u0 = np.log(a)
+        
+        func = lambda u : -self.logposterior(u, a)
+        result = scipy.optimize.minimize(func, u0, method=method, options=options)
+        # reconstruct the final transmat from the weights.
+        return transmat_from_u(result['x'], self.n_states)
 
-    def fit_map(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, method='cobyla', options={}):
+
+    def fit_map2(self, np.ndarray[ndim=2, dtype=DTYPE_T] countsmat, DTYPE_T prior, method='cobyla', options={}):
         """Maximum a-posteriori reversible transition matrix given a set of
         directed transition counts and a symmetric edge-reinforced random walk
         prior.
@@ -183,12 +202,8 @@ cdef class BayesTransmat:
         result = scipy.optimize.minimize(self.objective, u0,
            args=(symcounts, rowsums, logrowsums, prior), method=method, options=options)
 
-        # reconstruct the final counts from the weights. avoid
-        # double-counting the diagonal
-        transmat = np.zeros((self.n_states, self.n_states))
-        transmat[self.triu_indices] = np.exp(logX_from_u(result['x'], self.n_states))
-        transmat[np.diag_indices(self.n_states)] -= 0.5*np.diag(transmat)
-        return transmat + transmat.T
+        # reconstruct the final transmat from the weights.
+        return transmat_from_u(result['x'], self.n_states)
 
     def objective(self, u, symcounts, rowsums, logrowsums, priorstrength):
         """Objective function
@@ -276,3 +291,19 @@ cdef np.ndarray[ndim=1, dtype=DTYPE_T] logX_from_u(np.ndarray[ndim=1, dtype=DTYP
             k += 1
 
     return logX
+
+
+cdef np.ndarray[ndim=2, dtype=DTYPE_T] transmat_from_u(np.ndarray[ndim=1, dtype=DTYPE_T] u, int n_states):
+    cdef np.ndarray[ndim=1, dtype=DTYPE_T] q = logsymsumexp(u, n_states)
+    cdef np.ndarray[ndim=2, dtype=DTYPE_T] transmat = np.zeros((n_states, n_states), dtype=DTYPE)
+    cdef int i, j
+    cdef int k = 0
+
+    for i in range(n_states):
+        for j in range(i, n_states):
+            transmat[i, j] = np.exp(u[k] - q[i])
+            transmat[j, i] = np.exp(u[k] - q[j])
+            k += 1
+
+    return transmat
+
