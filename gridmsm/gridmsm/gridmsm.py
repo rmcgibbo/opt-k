@@ -148,9 +148,8 @@ class GridMarkovStateModel(object):
             else:
                 countsmat = countsmat + thesecounts
 
-        np.random.seed(42)
-        return (100*np.eye(4) + np.random.randint(10, size=(4,4))).astype(np.float64)
-        #return np.asarray(countsmat.todense(), dtype=np.float64)
+
+        return np.asarray(countsmat.todense(), dtype=np.float64)
 
     def sample(self, X, n_iters, thin=1, sigma=0.1):
         """Sample from the posterior
@@ -186,7 +185,6 @@ class GridMarkovStateModel(object):
         self._initialize_sequences(X)
 
         counts = self._countsmat(X)
-
         if method == 'mle':
             rc = msmlib.mle_reversible_count_matrix(
                 scipy.sparse.csr_matrix(counts + 1e-20))
@@ -217,8 +215,9 @@ class GridMarkovStateModel(object):
 
         for trajectory in X:
             labels = self._discretize(trajectory)
-            transition_log_likelihood += np.multiply(msmlib.get_counts_from_traj(
-                labels, n_states=self.n_states).todense(), logtransmat).sum()
+            counts = msmlib.get_counts_from_traj(labels, n_states=self.n_states).\
+                     todense()
+            transition_log_likelihood += np.multiply(counts, logtransmat).sum()
 
             if np.any(np.logical_or(trajectory < self.min, trajectory > self.max)):
                 emission_log_likelihood += -np.inf
