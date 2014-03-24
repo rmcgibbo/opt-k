@@ -8,7 +8,7 @@ from msmbuilder import MSMLib
 import numpy as np
 
 def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False, 
-    kellogg=False, mapping=None):
+    kellogg=False, mapping=None, sliding_window=True):
     """
     Function to calculate the log likelihood according to:
 
@@ -44,8 +44,18 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
     if not mapping is None:
         MSMLib.apply_mapping_to_assignments(trajs, mapping)
 
-    counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime,
-        n_states=tProb.shape[0])
+    if not sliding_window:
+        print "only using first trajectory"
+        counts = MSMLib.get_counts_from_traj(trajs[0], lag_time=lagtime, n_states=tProb.shape[0],
+            sliding_window=False)
+
+        counts = counts.tocsr()
+        counts.eliminate_zeros()
+        counts = counts.tolil()
+
+    else:
+        counts = MSMLib.get_count_matrix_from_assignments(trajs, lag_time=lagtime,
+            n_states=tProb.shape[0], sliding_window=True)
 
     counts = counts.tocsr()
     tProb = tProb.tocsr()
@@ -64,7 +74,10 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
     #log_like = np.sum(nonzero_counts * np.log(nonzero_tprobs)) - \
     #    np.sum(state_counts * np.log(volumes))
 
-    t_like = np.sum(nonzero_counts * np.log(nonzero_tprobs))
+    good_transitions = np.where(nonzero_tprobs != 0)
+    t_like = np.sum(nonzero_counts[good_transitions] * np.log(nonzero_tprobs[good_transitions]))
+    pct_lost = (nonzero_counts.sum() - nonzero_counts[good_transitions].sum()) / nonzero_counts.sum() * 100.
+    print "ignoring %.2f %% of counts that have zero probability according to the model"  % pct_lost
 
     if not kellogg:
         v_like = - np.sum(state_counts * np.log(volumes))

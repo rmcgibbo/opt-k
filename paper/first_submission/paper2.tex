@@ -1,0 +1,242 @@
+%\documentclass[twocolumn,floatfix,nofootinbib,acs]{revtex4-1}
+\documentclass[journal=jpcbfk, layout=twocolumn, manuscript=article]{achemso}
+\setkeys{acs}{articletitle = true}
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{amsmath}    % need for subequations
+\usepackage{amssymb}    % for symbols
+\usepackage{graphicx}   % need for figures
+\usepackage{verbatim}   % useful for program listings
+\usepackage{color}      % use if color is used in text
+\usepackage{subfigure}  % use for side-by-side figures
+\usepackage{hyperref}   % use for hypertext links, including those to external
+                        % documents and URLs
+\usepackage[capitalise]{cleveref}   % use for referencing figures/equations
+\usepackage{soul}
+\usepackage{bm}
+\usepackage{achemso}
+
+\title{Optimal Parameter Selection in Markov State Models for Biomolecular Conformational Dynamics}
+\author{Christian R. Schwantes}
+\affiliation{Department of Chemistry, Stanford University, Stanford CA 94305, USA}
+\altaffiliation{Contributed equally to this work}
+\author{Robert T. McGibbon}
+\affiliation{Department of Chemistry, Stanford University, Stanford CA 94305, USA}
+\altaffiliation{Contributed equally to this work}
+\author{Vijay S. Pande}
+\affiliation{Department of Chemistry, Stanford University, Stanford CA 94305, USA}
+\alsoaffiliation{Biophysics Program, Stanford University, Stanford CA 94305, USA}
+\alsoaffiliation{Department of Computer Science, Stanford University, Stanford CA 94305, USA}
+\alsoaffiliation{Department of Structural Biology, Stanford University, Stanford CA 94305, USA}
+\email{pande@stanford.edu}
+
+\mciteErrorOnUnknownfalse
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Markov state models (MSMs) are a powerful tool for the analysis of molecular dynamics simulations, but have been hampered by the need for manual selection of the number of states. We report a new method for the optimal selection of the number of states in an MSM based on the Bayesian information criterion. We demonstrate the approach on three systems of increasing complexity...
+\end{abstract}
+
+\section{Introduction}
+Protein are highly complex molecular machines, and their dynamics are an essential aspect of biomolecular function. These dynamics span a wide range of length scales, timescales and complexity, including folding and aggregation, conformational change between functional native substates, ligand binding, and allostery \cite{Dobson2003Protein, Kim2008Real, Austin1975Dynamics, Bahar2007Intrinsic}. Whereas classical experimental probes have often been interpreted in two-state frameworks, ensemble measurements with increasingly high temporal resolution as well as sensitive single molecule probes have uncovered a vast array of complex multi-state kinetics \cite{Cosa2006Evidence, Zhang2011Direct}. But the atomic-resolution characterization of these dynamics is often an enormous challenge -- as molecular probes like F\"{o}rster resonance energy transfer, small-angle x-ray scattering, and nuclear magnetic resonance techniques measure complex projections of the intrinsic structure, generally reporting simultaneously on many degrees of freedom\cite{Mertens2010Structural, Tzeng2011Protein}.
+
+Computer simulations can complement experiments by providing atomic insight into conformational dynamics. With advances at the algorithmic, hardware, and software levels, modern molecular simulation paradigms, incorporating specialized or accelerated hardware, often in combination with highly parallel distributed computing frameworks, are capable of generating extensive simulation data sets\cite{Eastman2013OpenMM, Shirts2000Screen, Shaw2009Millisecond, Hess2008PLINCS, Buch2010High}. In fact, the minimally-biased kinetic analysis of such simulations is often a central bottleneck and presents a major challenge to the field. The analysis paradigms often entail the construction of lower resolution models parametrized from the high resolution simulation data set which capture the essential features in an interpretable framework\cite{Freddolino2010Challenges, Lane2013Milliseconds}. For example, by projecting the data down onto one or two degrees of freedom we create a simpler model for the system, such as one characterized by diffusion along a single reaction coordinate\cite{Best2010Coordinate}.
+
+Markov state models (MSMs) are one approach for analyzing MD data sets and driving further MD simulations that are able to smoothly move between high and low-resolution models\cite{Pande2010Everything, Beauchamp2012Simple, Prinz2011Markov, Bowman2013Quantitative}. Such detailed models maintain quantitative agreement with the underlying simulation data, while low-resolution models capture the salient features of the potential energy landscape, sacrificing some degree of model complexity. In an MSM, the dynamics are modeled as a memory-less jump process between a discrete set of conformational states. The two key quantities which define the MSM are thus the state definitions, an indicator function basis over phase space, and the pairwise transition probabilities or transition rates, which parameterize the kinetics. The matrix of transition probabilities can be used to locate the systems transition paths\cite{Weinan2006Towards}, and its dominant eigenvectors to identify the metastable states\cite{Deuflhard2000Identification} and long-timescale dynamical modes\cite{}. 
+
+A significant challenge in the automated construction of Markov state models is the choice of the number of states\cite{McGibbon2013Learning}. Although classical Hamiltonian dynamics form a continuous-time Markov chain in $\mathbb{R}^{6N}$, the Markov property does not hold after the projecting the dynamics onto a basis of discrete indicator functions. In particular, when states contain within them free energy barriers of substantial magnitude, the validity of the Markov assumption begins to suffer considerably. While this source of modeling error can be addressed by increasing the number of microstates, the reduction in one error comes at the expense of the increase in another. This second source of error is statistical in origin. As the number of states in the model grows, so does the number of parameters required to completely specify the kinetic model between all pairs of states. Because the amount of data is constant, each additional parameter leads to a decrease in the amount of data available per model parameter, which makes the approach susceptible to over-fitting.
+
+Here, we seek to build models that are \emph{suitably} complex, given the data, yielding complex descriptions of the system only to the extent that their additional parameters are implied by the observed dynamics. To that end, we introduce a procedure for scoring the likelihood of an MSM, which, together with standard statistical model selection techniques, enables the optimal selection of the state space, which we express both in terms of the number of states and the clustering algorithm employed to group sampled conformations into states. This approach complements validation procedures performed primarily based on human intuition, such as Chapman-Kolmogorov tests, and enables the treatment of model selection as an optimization problem amenable to automated methods.
+
+\section{Prior Work}
+%After diagonalization of the transition matrix, the relaxation of any initial probability distribution can be described by a superposition of exponential relaxation processes, with a characteristic time given by $-\frac{1}{\ln \lambda_i}$.
+In the context of MSMs, model selection has traditionally been performed by analyzing the self-consistency of the models with respect to changes in the Markov lag time. As suggested by \citet{Swope2004Describing}, given a Markov model at a lag time of $\tau$, $T(\tau)$, we expect that a model with a lag time of $n\tau$ should merely be the $n^\textnormal{th}$ power of $T(\tau)$:
+$$ T(n\tau) = T(\tau)^n $$ As such, the eigenvalues, and correspondingly the relaxation timescales, should remain constant as the lag time increases. The resulting test of a model's quality consists of calculating the eigenspectra of models built at many lag times and choosing models whose eigenvalues have converged. 
+
+In practice, this test has been useful for many \cite{Noe2009Constructing}, however has some flaws. For instance, it is generally observed that most models' timescales do not converge, but steadily increase, so it is difficult to judge whether a particular model passes the test. Additionally, it is difficult to compare models built on two state decompositions, as neither may have convergent timescales. Often, the choice is made to use the model whose timescales better match an experimental observable.
+
+Other evaluation strategies include a test based on comparison to a second-order Markov model \cite{Park2006Validation}. Additionally, Bayesian methods that involve marginalizing over all possible MSMs have been developed \cite{Bacallado2009Bayesian, *Bacallado2011Bayesian}. However, these methods are often prohibitively expensive on larger datasets. In contrast, \citet{Kellogg2012Evaluation} proposed a tractable method for comparing MSMs built with different state decompositions, based on a likelihood function for an MD trajectory given an MSM, discussed below.
+
+\section{Likelihood of a Markov State Model}
+Bayes' rule provides a foundation for model selection, by establishing the proportionality of the probability of a model given the data to the probability of the data given the model. Without a strong prior, model selection is reduced to the search for the model that maximizes the likelihood of the data. 
+
+Thus we seek to formulate this likelihood function for Markov state models. With the kinetic model expressed as a set of pairwise state to state transition probabilities at a given lag time, the likelihood of an ensemble of trajectories after projection into the MSM state space is given simply by the product of the transition matrix elements along the observed trajectories. However, as we vary the number of states, it is not permissible to simply compare these likelihoods as part of an optimization of the state definitions. In doing so, the optimal model would always be the trivial one state model, whose computed likelihood is unity regardless of the data.
+
+The appropriate likelihood is instead a path action in phase space, on which the discrete states are merely an indicator function basis. With $s(\mathbf{x})$ as the function mapping conformations into the indicator function basis set, and $\{\mathbf{x}_t\}_{t=1}^N$ an observed trajectory, the likelihood can be written as:
+
+\begin{equation}
+\begin{split}
+P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
+\cdot \prod_{t=1}^{N} P(\mathbf{x}_t | s(\mathbf{x}_t)) \cdot d\mathbf{x}^N
+\label{eq:like}
+\end{split}
+\end{equation}
+
+With a discrete, non-overlapping state space, the likelihood of a sampled trajectory can be decomposed into a product of terms of two types: the state to state Markov transition probabilities, $T(s_i \rightarrow s_j) \equiv P(S_{t+1}=s_j | S_{t}=s_i)$, and so-called emission distributions of each state, $P(\mathbf{x} | s(\mathbf{x}))$, the conditional probability of observing a conformation at a given location in phase space given that the conformation, $\mathbf{x}$, is within a certain state, $s_i$. By convention, we define $P(\mathbf{x}| s(\mathbf{x}))$ to be zero for all $\mathbf{x}$ such that $s(\mathbf{x}) \neq s_i$. 
+
+This emission distribution can be potentially modeled in multiple ways, each of which, in combination with a transition matrix, parameterizes a different statistical model. \citet{Kellogg2012Evaluation} used a discriminative model with:
+\begin{equation}
+P(\mathbf{x}_t | s(\mathbf{x}_t)) = \big| \{ \mathbf{x}_k : s(\mathbf{x}_k) = s(\mathbf{x}_t) \} \big|^{-1}
+\end{equation} This model has the training dataset as its support rather than phase space, which makes it unable to generalize and assign probability to new data. In certain circumstances, this is an undesirable property. For example, protocols that involve fitting and validating models on separate datasets (e.g. cross-validation) are impossible when the statistical model lacks the capacity to describe new data.
+
+Instead, we seek a generative model whose emission distributions are supported on phase space (i.e. standard distributions over $\mathbb{R}^{3N_{atoms}}$). We propose two possible emission distributions, $P(\mathbf{x} | s(\mathbf{x}))$: first, a uniform distribution over the (hyper)volume of each state, as shown in \cref{eq:like_vol}. This model has the advantage of appearing agnostic with respect to intra-state dynamics but is intractable in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation. 
+ 
+%For example, consider two Markov state models sharing the same transition matrix, $T$. In one model, the state emission distributions are highly peaked at specific locations in phase space, whereas in the other model the emission distributions are uniform over the volume of the states. If an observed trajectory does go through the first models' regions of high likelihood, it is appropriately termed a more likely model given the data.
+
+ 
+%The simplest definition would be a uniform distribution since we are constructing an MSM that is agnostic to intra-state dynamics. When properly normalized, the uniform distribution takes a value of the reciprocal of the state's volume. This makes for an easy expression, however, volumes in high-dimensional states can be difficult to compute \ref{eq:like_vol}. For this reason, we can also choose other emission distributions that may be more tractable. In fact, \citet{Pelleg2000Xmeans} have used a gaussian emission distribution to define a likelihood to compare two k-means clusterings. The result of this emission distribution, is that the likelihood is proportional to the sum of square distances, which is precisely what is optimized in k-means clustering. If we think of k-centers as a poor man's version of k-means, then we can apply this same likelihood.
+\begin{equation}
+\label{eq:like_vol}
+\begin{split}
+%P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
+ P(\mathbf{x}_t | s(\mathbf{x}_t)) = \frac{1}{V_{s(\mathbf{x}_{t})}}
+\end{split}
+\end{equation} 
+
+A more tractable alternative is a Gaussian emission model where $P(\mathbf{x} | s(\mathbf{x}))$ is modeled as multivariate normal \cref{eq:like_mvn}.
+\begin{equation}
+\label{eq:like_mvn}
+\begin{split}
+P(\mathbf{x}_t | s(\mathbf{x}_t)) = \Bigg[ \frac{1}{(2 \pi)^\frac{d}{2} |\Sigma_{s(\mathbf{x}_t)}|^\frac{1}{2}} \\
+   \exp\left(-\frac{1}{2} (\mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)})^T \Sigma_{s(\mathbf{x}_t)}^{-1} (\mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)})\right)\Bigg] 
+\end{split}
+\end{equation} where $\bm{\mu}_{s(\mathbf{x}_t)}$ is the cluster center assigned to $\mathbf{x}_t$ and $\Sigma_{s(\mathbf{x}_t)}$ is the corresponding covariance matrix. For simplicity, we follow \citet{Pelleg2000Xmeans} and employ a spherical Gaussian model with a single shared variance parameter across the states estimated by maximum likelihood, under which it reduces to:
+\begin{equation}
+\label{eq:like_mvn2}
+ P(\mathbf{x}_t | s(\mathbf{x}_t)) = \frac{1}{\left(2 \pi \hat{\sigma}^2\right)^{\frac{d}{2}}} \exp\left(-\frac{||\mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)}||^2}{2 \hat{\sigma}^2} \right)
+\end{equation} where
+\begin{equation}
+\label{eq:mle_sigma}
+\hat{\sigma}^2 = \frac{1}{N - k} \sum_{t=1}^N || \mathbf{x}_t - \bm{\mu}_{s(\mathbf{x}_t)} ||^2
+\end{equation} and $k$ is the number of states.
+
+Since the likelihood requires the emission distributions to have zero overlap -- such that each conformation only has nonzero emission probability from a single state, the nonzero overlap between the Gaussian emission distributions introduces a truncation error. One approach to ameliorate this issue is to truncate the density functions at the state boundaries, and renormalize. We assume that the overlaps are small, and use the density defined in \cref{eq:like_mvn2}. An alternative approach for relaxing this approximation is possible with the forward-backward algorithm,\cite{Rabiner1989Tutorial} but is beyond the scope of this work.
+
+\section{Cross Validation and the Bayes Information Criterion}
+Likelihood maximization is insufficient for model selection when the number of parameters varies between proposed models, as more complex models generally exhibit higher empirical likelihoods, often at the cost of larger generalization errors due to overfitting\cite{Liddle2007Information, Hastie01Elements}. Statistical learning theory provides a number of alternative approaches for this problem. Conceptually, the most straightforward is a full Bayesian treatment in which all unknown model parameters are represented by probability distributions. The evidence for a model is computed by formally integrating over the model parameters and the evidence ratio, or Bayes factor\cite{Gelfand94Bayesian}, then provides a rigorous basis of model selection that appropriately punishes overly complex models as they become poorly constrained in parameter space. Unfortunately such approaches are intractable for problems of this size because of the need to integrate over all possible Markov models of a given size.
+
+Instead, we explore three alternative procedures for choosing the number of states in an MSM: cross validation, Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} and the Akaike information criterion (AIC)\cite{Akaike1974AIC}. Cross-validation attempts to directly measure the Markov model's generalization error. First, the model is parameterized by building both the state space and transition matrix on a subset of the available molecular dynamics trajectories, then the likelihood is evaluated on the left-out portion. This scheme can be repeated many times with different partitions of the dataset. The AIC and BIC are augmented likelihood function approaches which do not require leaving out portions of the available data during fitting, and instead employ asymptotic approximations to the Bayesian evidence to directly penalize models with additional free parameters.
+\begin{equation}
+\label{eq:bic}
+\mathrm{BIC} \equiv -2\cdot \ln L + \kappa \cdot \ln N
+\end{equation}
+\begin{equation}
+\label{eq:aic}
+\mathrm{AIC} \equiv -2\cdot \ln L + 2 \cdot \kappa
+\end{equation} where $L$ is the likelihood, $\kappa$ is the number of free parameters, and $N$ is the number of data points, assumed to be independent and identically distributed. Model selection is performed by a minimization of the criterion.
+
+\section{Computational Methods}
+
+\begin{figure}
+\centering
+\includegraphics[width=3in]{figs_final/mull_ww.png}
+\caption{Systems studied in this work. (A) Langevin dynamics on the two dimensional M\"{u}ller potential \cite{Muller1980Reaction}. (b) 200 $\mu s$ of dynamics of the Fip35 WW domain\cite{Liu2008Experimental}, courtesy of D.E. Shaw research \cite{Shaw2010Atomic}.}
+\end{figure}
+
+The uniform distribution emission model presents a computational challenge: its use requires the calculation of the (hyper)volume of the MSM's states, which, when defined by clustering, are high-dimensional Voronoi cells. While trivial in two or three dimensions, this computational geometry task becomes challenging in high-dimensional settings. The computation of such volumes has occupied significant attention in recent years in the computational geometry literature, especially via randomized algorithms\cite{Kannan97, Simonovits03, Lovasz03}. We opt to approximate the volumes using naive Monte Carlo rejection sampling, which we find tractable for large systems only when the molecular dynamics dataset is first projected into a suitable small vector space of up to perhaps ten dimensions.
+
+A further challenge is the description of the states that are at the edge of the MSM -- whose Voronoi cells extend to infinity in at least one direction. In these cases, the Voronoi cells are of unbounded volume. Instead we wish to truncate these states by bounding them by the convex hull of the dataset. Because the convex hull of our simulation datasets are computationally inaccessible, we define the outer extent of our data sets to be the set of all trial points such that the nearest sampled conformation to the trial point is closer than a certain cutoff, $R$.
+
+For cross validation, we find it essential to use a dense prior during transition matrix estimation. Because the maximum likelihood transition matrix fit on a subset of the data assigns probability zero to unobserved transitions, we observe cross validation log likelihoods of negative infinity in all but the most data-rich regimes. We used a Dirichlet prior with a pseudo-count of $\frac{1}{k}$ for each possible transition, where $k$ is the number of states in the model.
+
+\section{Results and Discussion}
+\subsection{M\"{u}ller Potential}
+We simulated two trajectories with $10^6$ steps of Langevin dynamics on the M\"{u}ller potential\cite{Muller1980Reaction}. Simulations were performed with a timestep $t=0.1$, friction coefficient of $\gamma=10^3$, and $kT=15$. The first trajectory was clustered using the $k$-centers clustering algorithm, and state volumes were computed for the uniform emission model using $10^5$ rounds of Monte Carlo rejection sampling with a cutoff of $R=0.28$ from the 50 state model's centroids. The second trajectory was used as a test set. All MSMs were built using a lag time of $30 steps$.
+
+The volumes did not change drastically upon doing ten times more Monte Carlo rejection sampling, and the likelihood remained essentially constant, which indicates that the use of approximation volumes is sufficient to obtain robust estimates of the likelihood. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3in]{figs_final/mull_likes.png}
+\caption{We calculated the training and test set log-likelihoods and model selection criteria for models built with 50-1000 states using both the uniform ({\bf A}) and multivariate normal ({\bf B}) emission distributions. Dashed lines represent the optimal model as defined by the AIC, BIC, or test set log-likelihood and form the boundaries of the optimal window (shaded dark gray). For both likelihoods, the BIC penalizes complexity more than the AIC and test set log-likelihood. The optimal window is consistent with the convergence of the implied timescales (right frames).}
+\label{fig:mullerlike}
+\end{figure}
+
+As shown in \cref{fig:mullerlike}, models built with too few states achieve a drastically reduced likelihood, but above a threshold region the likelihood increases relatively slowly. The penalty on the number of parameters in \cref{eq:bic} and \cref{eq:aic} begins to dominate. The optimal models, according to the three methods are between 200 and 600 states for this system, which is consistent with the convergence of the relaxation timescales of the models. 
+
+The AIC and BIC penalize the larger state models much more than the test set log-likelihood. On the two-dimensional potential, in our data-rich regime it is difficult to produce an over-fit model. Cross-validation requires fitting multiple models on subsets of the data, and so is not feasible for larger systems in the data-poor regime.
+
+We also tested the Gaussian likelihood on MSMs built using k-means clustering on the M\"uller potential. The training and test set log-likelihoods, BIC, and AIC are all optimized by a five state model (\cref{fig:kmeans_mull}). The decrease in the training set log-likelihood can be explained by a trade-off inherent in \cref{eq:like}, where adding more states leads to an improvement in the emission distribution term but causes the transition matrix term to suffer. This trade-off illustrates a deficiency in the step-wise approach in which neither the transition matrix nor the state space is parameterized to explicitly optimize the full \cref{eq:like}.
+
+\begin{figure}
+\centering
+\includegraphics[width=2.5in]{figs_final/kmeans_like2_lbl.png}
+\caption{MSMs were built using k-means clustering on the M\"uller potential simulations. Since k-means optimizes an objective function that is related to the emission probability, our likelihood picks only a few states as the most likely model. The likelihood decreases as new states are introduced, due to a competition between the transition matrix term and emission distribution term in \cref{eq:like}.}
+\label{fig:kmeans_mull}
+\end{figure}
+
+\subsection{Fip35 WW Domain}
+
+We reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{Shaw2010Atomic}. Because the likelihood calculations involving the uniform distribution emission model have exponential complexity in the dimensionality of the state space we first preprocess the trajectories with time-structure based independent components analysis (tICA) \cite{Schwantes2013Improvements, Perez2013Identification}, extracting only the four slowest uncorrelated linear combinations of residue-residue distances. All MSMs were built using a lag time of $50 ns$.
+
+The complexity of evaluating the Gaussian emission model likelihood does not increase with respect to dimension. Thus we used the Gaussian emission model with both the four-dimensional tICA models and those built using k-centers clustering with the minimal cartesian root-mean squared deviation (RMSD) over Fip35's 252 non-redundant heavy atoms, computed using the quaternion characteristic polynomial method\cite{Theobald2005Rapid}. For evaluating the Gaussian emission likelihood, we used a value of $3 \cdot 252 - 6 = 750$ for the dimension of the emission distribution.
+
+\begin{figure}
+\centering
+\includegraphics[width=3in]{figs_final/ww_likes.png}
+\caption{On models whose states were defined after projecting into the four-dimensional tICA subspace, we computed likelihoods based on the uniform ({\bf A}) and Gaussian ({\bf B}) emission models. Models built using the RMSD metric were evaluated with the Gaussian emission model ({\bf C}). Dashed lines represent the optimal model as defined by the AIC, BIC, or test set log-likelihood and form the boundaries of the optimal window (shaded dark gray). Test set log-likelihoods are omitted in {\bf C} as the dense matrix algebra is intractable for $k > 10^3$.\label{fig:ww}}
+\end{figure}
+
+For the models built in the tICA subspace, the AIC is comparable to the test set log-likelihood scores using either emission model, displaying a optimum at ~600 states (\cref{fig:ww}). The BIC penalizes complexity more strongly with an optimum at ~150 states. This window is consistent with the convergence of the implied timescales and the onset of Markovian behavior. Models built with RMSD require significantly more states than the tICA MSMs and show poor timescale convergence. These results indicate why model selection based on implied timescales is so difficult, as a less than optimal state decomposition can result in timescales that do not converge rapidly (if at all).
+
+The two 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain simulated by \citet{Shaw2010Atomic} have been used to parameterize multiple Markov state models. \citet{Lane2011Markov} proposed a 26,000 state MSM after clustering the data by RMSD, whereas Kellogg et al.,\cite{Kellogg2012Evaluation} clustering on contact maps or secondary structure, proposed 100 and 175 state models, respectively. Consistent with this spread, we find the optimal number of states to be highly dependent on the space in which the data is clustered. With RMSD, the Gaussian likelihood indicates that Markov models built with on the order of 5,000 states optimally balance model quality and generalization error. On the other hand, the tICA method's identification of slow order parameters in the simulations has the effect of reducing the number of states necessary when constructing Markov models. Even with 200-600 states, Markov models constructed using tICA are able to accurately identify the simulations folding process on the 1-10 $\mu s$ timescale, as well as the faster near-native dynamics identified in this dataset by McGibbon and Pande\cite{McGibbon2013Learning}.
+
+\subsection{Limitations and Future Work}
+
+The likelihood functions described herein permit the comparison of Markov state models with varying number of states, however, they require that the compared models have the same support. As such, a direct comparison of the likelihoods between models built with tICA and models built with RMSD is not possible. Furthermore, the uniform emission model is intractable for all but the simplest systems. The Gaussian emission model does not have this limitation.
+
+In the future, we plan to extend this work to the consideration of models without discrete states, where the requirement that states strictly partition phase space into a set of discrete indicator functions is relaxed and the models are parameterized by a direct optimization of \cref{eq:like}. This strategy would complement approaches that generalize MSMs beyond discrete states\cite{Noe2013Variational}.
+
+\section{Conclusions}
+
+Markov State Models are powerful and popular frameworks for the analysis of molecular simulations, with a growing literature and two open source software tools\cite{Beauchamp2011Msmbuilder2, Senne2012EMMA}. There are, however a number of steps in the construction process that require hand-tuning, which limits the use of MSMs to experts and introduces significant biases into the model building process. Additionally, the ability to automatically construct MSMs on the fly while simulations are in progress, an important point for so-called adaptive sampling procedures\cite{Bowman2010Enhanced}, is hampered when manual model selection is required. 
+
+These results take a step toward fully automating the MSM construction process and controlling the complexity and generalization error by providing a quantitative method for selecting the most suitably complex model, given the data.
+\bibliography{bibliography}
+\end{document}
+
+
+In the finite-data regime, additional complexity in the Markov model, in the form of increasing number of states, does come at a statistical cost.
+\begin{itemize}
+\item Is the 26,000 state model ``overfit''? The obvious answer, based on the line of reasoning that this paper is taking, is yes. But I think we need to consider the question a little more subtly. Perhaps it depends on what questions we ask of the model. When you ask both a ``properly-fit'' model and an overfit model a question that basically falls within the training set -- and neither of them need to extrapolate or really infer out-of-sample information, they'll both do fine. Heck, the overfit model might do better at telling you exactly what was \emph{in} the dataset.
+\item The folding timescale is relatively insensitive to differences in MSM construction methodology. This has been observed in many datasets (McGibbon 2013, others). We hypothesize that this behavior is due to the large structural deviations at play -- even a two state model, given the same dataset, could basically get the right timescale just from counting the number of transitions. But finding these other timescales that are structurally subtle is different challenge. Also, how robust are other properties like experimental projections or the MFPT distribution to the number of states?
+\item Single trajectory datasets are ``easier'' for MSMs. One of the uses of MSMs is to ``stitch together'' multiple trajectories -- this function only happens when the states are large enough that they \emph{connect} trajectories, so you can't have too many states in this case. But when you have a single trajectory, there's no possible way to create a disconnected model anyways.
+\item We need to state, elegantly if possible, the differences between our likelihood and Liz Kellogg's. This requires some careful language, since we think there are methodological problems with her approach.
+\end{itemize}
+
+
+
+
+\begin{itemize}
+\item This model doesn't help us pick the lag time.
+\item It also doesn't help us pick the projected vector space, at least in a quantitative way. This is kind of a big deal, but it is what it is.
+\item Uniform distributions are extremely inconvenient to work with. In the future, we plan to extend this work to Markov state models without discrete states.
+\item \{I want to get this in print.\} Going forward, we anticipate that a combination of kinetic dimensionality reduction and clustering is going to be the key combination for robust Markov state model construction. The two approaches are characterized by complementary approximations and sources of error. In dimensionality reduction, the assumption is that the dynamics ``align'' with the vectors in some sense -- we talk about dynamics in the ``x direction'' as having some characteristic, regardless of whether they occur around $x=x_a$ or $x=x_b$. In clustering, if $x_a$ and $x_b$ are in different states, there's no crosstalk at all. A euclidean distance metric is invariant with respect to unitary transforms anyways. But clustering gets ``thrown off'' when you have kinetically irrelevant directions: to get the same resolution with the clusters in the kinetically \emph{relevant} directions, you need a number of states that is exponential in the number of included kinetically \emph{irrelevant} directions. Because the sources of error are complementary, the combination should be uniquely powerful.
+\end{itemize}
+
+
+\begin{itemize}
+    \item MSMs are great
+    \item They have weaknesses. We are solving them.
+    \item The automated selection of the number of states is a critical part of procedures that build MSMs as part of a simulation protocol to drive adaptive sampling. If MD algorithms required user input every couple picoseconds, people would never get anything done.
+\end{itemize}
+
+
+
+% old stuff about using uniform distributions
+However, models' long timescale behavior -- the rates and fluxes between metastable basins -- are independent of the choice of the emission distributions. The emission distributions characterize only the fine details of the equilibrium distribution within states, a quantity that the MSM approach does not seek to model; implicit in the decision to group conformations together into states is the idea that we decline to model the differences between conformations belonging to the same state. If such differences exist and are sufficiently large to warrant attention, than the states are too large.
+
+Therefore, the most appropriate emission distribution for discrete state MSMs is that of the uniform distribution over the phase-space volume of the state. That is, the likelihood of observing a conformation in phase space given that the conformation is assigned to state $i$ is $0$ if the conformation is outside of the bounding volume of the state and constant if the conformation is within the volume. This constant is set so that the distribution integrates to $1$, and is thus the reciprocal volume of the microstate.
+
+
+%\begin{figure}
+%\centering
+%\includegraphics[width=3.1in]{figs/overfitting.png}
+%\caption{An example of overfitting. Left: in the presence of noise, a more complex model is able to fit the observed training data better, with lower residues and a higher empirical likelihood, %but fails to distinguish the signal from the noise. Right: more complex model classes exhibit lower training errors, but generalize poorly to unobserved data.}
+%\end{figure}
+
+
+
+
