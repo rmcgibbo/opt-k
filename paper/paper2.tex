@@ -95,10 +95,32 @@ $$
 where $T_{ij}$ is the probability of transiting to state $j$ in time $\tau$ given that the system started in state $i$. With this construction, the eigenvalues and eigenvectors of $\mathbf{T}$ \hl{provide approximations (what about transfer operator?)} for the eigenvalues and eigenfunctions of $\mathcal{Q}$.
 
 
-Let $D$ be a set of molecular dynamics trajectories in $\Omega$. To construct an MSM, both $S$ and $\mathbf{T}$ must be determined from the data. ${S}$ is defined by $\sigma$, which can be constructed by clustering the points in $D$. Given $S$, maximum-likelihood estimators for the the transition probabilities $\mathbf{T}$ exist\cite{kyle, frank}.
+Let $D$ be a set of molecular dynamics trajectories in $\Omega$. To construct an MSM, both $S$ and $\mathbf{T}$ must be determined from the data. ${S}$ is defined by $\sigma$, which can be constructed by clustering the points in $D$. Given $S$, maximum-likelihood estimators for the $O(k^2)$ transition probabilities $\mathbf{T}$ exist\cite{kyle, frank}.
 
-Using this procedure, it has been shown that MSM estimates of the eigenvalues $\lambda_i$ are systematically underestimated in the limit of infinite data, and that the magnitude of this bias goes to zero as $k\rightarrow \infty$. This fact has inspired the development of variational methods for model selection, which optimize the MSM parameters in order to maximize the eigenvalues.
+Using this procedure, it has been shown that MSM estimates of the eigenvalues $\lambda_i$ are systematically underestimated in the limit of infinite data, and that the magnitude of this bias goes to zero as $k\rightarrow \infty$. This fact has inspired the development of variational methods for model selection, which optimize the MSM parameters in order to maximize the eigenvalues \cite{feliks}.
 
+\section{Statistical Model Selection}
+For MSM methods to be valuable to practitioners, they must operate in limited data regimes. Thus, we seek a method for model selection that is sensitive to both the systematic error discussed above, as well as the statistical error associated with estimating the model's parameters. Whereas model selection based on the variational principle described above would tend to increase the number of states without bound, as the magnitude of the eigenvalue bias decreases with the number of states, practical application of this criteria would cause a catastrophic increase in statistical uncertainty in the model. This tradeoff between low-variance (small $k$) but biased estimators, and high-variance (large $k$) but unbiased estimators is a general feature of problems in statistical learning\cite{}. For example, as we show in appendix A, the uncertainty in the posterior distribution of $\mathbf{T}$ given $S$ and $D$ grows as $O(k)$.
+
+Introduction to MSMs via the propagator theory motivates the view of the parameterization problem as one of \emph{function estimation}. This perspective has a critical disadvantage: the natural error metric -- the difference between the estimated MSM and true propagator is intrinsically uncomputable. Instead, a compelling alternative is to view the problem as one of time series \emph{prediction}. We attempt to build models which predict new data. Here, the quality of the prediction (as measured for example by the likelihood that the model would generate an observed sample) is a natural measure of the quality of the model.
+
+%The basic framework for model selection intimated in the section involves minimization of an error metric characteristics of the model -- for example the norm of the between the model's eigenvalues and the propagator's true eigenvalues, or the L2 norm of the eigenvectors ( I think frank worked with this in one paper). Unfortunately, these quantities are not computable from a given model $M = \{S, T\}$ and data set $D$. The only access we have to the true propagator is via sampling new data. Therefore, the only way to know that we have constructed a model that is consistent with the propagator is to test how well the model would predict the new data. 
+
+%The only available access to the information in the propgator is our sample $D$. For this reason, we instead emphasize the ability of the model to predict $D$.
+
+%On one hand, $M$ can be viewed as being fit _on_ $D$, but from another perspective $M$ is something that can _generate_ $D$. We thus can consider how predictive $M$ is.
+
+\begin{itemize}
+\item We always have finite data, and so this variational approach ignores another source of error due to the statistical error
+\item What we really want is a model that reproduces the dynamics due to the hamiltonian
+\item In practice, the transfer operator is inaccessible, and what you have is data and a model that attempts to describe the data.
+\item But the only way to access the true transfer operator is to sample from it and produce new data. Therefore, we should actually attempt to estimate a model that can best predict new data.
+\item This MSM has since been referred to as an object that takes in data, but in fact (as it is generative) we are parameterizing it to generate new data. 
+\item So if we build many MSMs, the ``best" model is the one that is most likely to have produced the newly observed data. 
+\item This means that we should construct a model such that it assigns a high probability to the new data. 
+\item This is precisely the idea of cross-validation or BIC/AIC (maybe we should define them here).
+\item The true data is a random variable (that we can sample), but in an MSM, the trajectory sampled is a random variable
+\end{itemize}
 
 \section{bayesian statistics}
 \begin{itemize}
