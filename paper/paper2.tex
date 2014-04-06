@@ -41,11 +41,11 @@ Markov state models provide a powerful framework for the analysis of biomolecula
 \end{abstract}
 
 \section{Introduction}
-Proteins are highly complex molecular machines, and their dynamics are an essential aspect of biomolecular function. These dynamics span a wide range of length scales, timescales and complexity, including folding and aggregation, conformational change between functional native sub-states, ligand binding, and allostery \cite{Dobson2003Protein, Kim2008Real, Austin1975Dynamics, Bahar2007Intrinsic}. Whereas classical experimental probes have often been interpreted in two-state frameworks, ensemble measurements with increasingly high temporal resolution as well as sensitive single molecule probes have uncovered a vast array of complex multi-state kinetics \cite{Cosa2006Evidence, Zhang2011Direct}. But the atomic-resolution characterization of these dynamics is often an enormous challenge -- as molecular probes like F\"{o}rster resonance energy transfer, small-angle x-ray scattering, and nuclear magnetic resonance techniques measure complex projections of the intrinsic structure, generally reporting simultaneously on many degrees of freedom\cite{Mertens2010Structural, Tzeng2011Protein}.
+Proteins are highly complex molecular machines, and their dynamics are an essential aspect of biomolecular function. These dynamics span a wide range of length scales, timescales and complexity, including folding and aggregation, conformational change between functional native sub-states, ligand binding, and allostery \cite{Dobson2003Protein, Kim2008Real, Austin1975Dynamics, Bahar2007Intrinsic}. Whereas classical experimental probes have often been interpreted in two-state frameworks, ensemble measurements with increasingly high temporal resolution as well as sensitive single molecule probes have uncovered a vast array of complex multi-state kinetics \cite{Cosa2006Evidence, Zhang2011Direct}. But the atomic-resolution characterization of these dynamics is often an enormous challenge -- as molecular probes like F\"{o}rster resonance energy transfer, small-angle x-ray scattering, and nuclear magnetic resonance techniques measure complex projections of the intrinsic structure, generally reporting simultaneously on many degrees of freedom\cite{FRET_PAPER?, Mertens2010Structural, Tzeng2011Protein}.
 
-Computer simulations can complement experiments by providing atomic insight into conformational dynamics. With advances at the algorithmic, hardware, and software levels, modern molecular simulation paradigms, incorporating specialized or accelerated hardware, often in combination with highly parallel distributed computing frameworks, are capable of generating extensive simulation ensembles with relative ease\cite{Gotz2012Routine, Eastman2013OpenMM, Shirts2000Screen, Shaw2009Millisecond, Hess2008PLINCS, Buch2010High}. A central challenge in the field of molecular simulations is now often the kinetic analysis of simulation datasets. The analysis paradigms often entail the construction of lower resolution models parametrized from the high resolution simulation data set which capture the essential features in an interpretable framework\cite{Freddolino2010Challenges, Lane2013Milliseconds}. For example, by projecting the data down onto one or two degrees of freedom we create a simpler model for the system, such as one characterized by diffusion along a single reaction coordinate\cite{Best2010Coordinate}.
+Computer simulations can complement experiments by providing atomic insight into conformational dynamics. With advances at the algorithmic, hardware, and software levels, modern molecular simulation paradigms, incorporating specialized or accelerated hardware, often in combination with highly parallel distributed computing frameworks, are capable of generating extensive simulation ensembles with relative ease\cite{Gotz2012Routine, Eastman2013OpenMM, Shirts2000Screen, Shaw2009Millisecond, Hess2008PLINCS, Buch2010High}. A central challenge in the field of molecular simulations is now often the kinetic analysis, which typically involves constructing a lower resolution model that captures the system's essential features in an interpretable framework\cite{Freddolino2010Challenges, Lane2013Milliseconds}. For example, by projecting the data down onto one or two degrees of freedom we create a simpler model for the system, such as one characterized by diffusion along a single reaction coordinate\cite{Best2010Coordinate}.
 
-Markov state models (MSMs) are one approach for analyzing MD data sets that are able to smoothly move between high and low-resolution models\cite{Chodera2007Automatic, Prinz2011Markov, Beauchamp2012Simple, Bowman2013Quantitative}. High-resolution  models maintain quantitative agreement with the underlying simulation data, while low-resolution models capture the salient features of the potential energy landscape, sacrificing some degree of model complexity. In an MSM, the dynamics are modeled as a memory-less jump process between a discrete set of conformational states which partition the phase space. Two key quantities which define the MSM are thus the state definitions, an indicator function basis over phase space, and the pairwise transition probabilities or transition rates, which parameterize the kinetics. The matrix of transition probabilities can be used to locate the systems transition paths\cite{Weinan2006Towards}, and its dominant eigenvectors identify the metastable states\cite{Deuflhard2000Identification} and long-timescale dynamical modes\cite{who?}.
+Markov state models (MSMs) are one approach for analyzing MD data sets that are able to smoothly move between high and low-resolution models\cite{Chodera2007Automatic, Prinz2011Markov, Beauchamp2012Simple, Bowman2013Quantitative}. High-resolution  models maintain quantitative agreement with the underlying simulation data, while low-resolution models capture the salient features of the potential energy landscape, sacrificing some degree of model complexity. In an MSM, the dynamics are modeled as a memory-less jump process between a discrete set of conformational states which partition the phase space. Two key quantities that define the MSM are thus the state definitions, an indicator function basis over phase space, and the pairwise transition probabilities, which parameterize the kinetics. The matrix of transition probabilities can be used to locate the systems transition paths, and its dominant eigenvectors identify the metastable states and long-timescale dynamical modes\cite{Weinan2006Towards, Deuflhard2000Identification}.
 
 %The trajectory in phase space ($\mathbf{x}_t$) is assigned to one of $k$ states. We represent this assignment by the $s(\cdot)$ function. The dynamics in state space are described by the transition probability matrix. Since the model is Markovian, the probability that a given trajectory in state $s(\mathbf{x}_t)$ will be in some state $i$ is given by $\mathbf{T}_{s(\mathbf{x}_t), i}$:
 %\begin{equation}
@@ -53,36 +53,52 @@ Markov state models (MSMs) are one approach for analyzing MD data sets that are 
 %s(\mathbf{x}_{t+\tau}) \sim_d \mathbf{T}_{s(\mathbf{x}_t), i}
 %\end{equation} 
 
-A significant challenge in the automated construction of Markov state models is the choice of the number of states\cite{McGibbon2013Learning}. Although classical Hamiltonian dynamics with $N$ particles form a continuous-time Markov chain in $\mathbb{R}^{6N}$\cite{vanKampen}, the projection of this high-dimensional process into a lower dimensional space (such as the discrete indicator functions used by MSMs) is generally governed by non-Markovian dynamics. \hl{In the Morri-Zwanzig approach, this corresponds to the generalized Langevin equation with a nontrivial memory kernel}(What is this about?)\cite{ZM}. Within the MSM context, on the other hand, this means that first order Markov chains incur a systematic error in their modeling of the high-dimensional system. In particular, when MSM states contain within them kinetic barriers of substantial magnitude, the bias due to the first-order Markov approximation is large. While this source of modeling error can be addressed by increasing the number of states, the reduction in one error comes at the expense of the increase in another. This second source of error is statistical in origin. As the number of states in the model grows, so does the number of parameters required to completely specify the kinetic model between all pairs of states. Because the amount of data is constant, each additional parameter leads to a decrease in the amount of data available per model parameter, which makes the approach susceptible to over-fitting.
+%A significant challenge in the automated construction of Markov state models is the choice of the number of states\cite{McGibbon2013Learning}. Although classical Hamiltonian dynamics with $N$ particles form a continuous-time Markov chain in $\mathbb{R}^{6N}$, the projection of this high-dimensional process into a lower dimensional space (such as the discrete indicator functions used by MSMs) is generally governed by non-Markovian dynamics\cite{van1992Stochastic}. \hl{In the Morri-Zwanzig approach, this corresponds to the generalized Langevin equation with a nontrivial memory kernel}(What is this about?)\cite{ZM}. Within the MSM context, on the other hand, this means that first order Markov chains incur a systematic error in their modeling of the high-dimensional system. In particular, when MSM states contain within them kinetic barriers of substantial magnitude, the bias due to the first-order Markov approximation is large. While this source of modeling error can be addressed by increasing the number of states, the reduction in one error comes at the expense of the increase in another. This second source of error is statistical in origin. As the number of states in the model grows, so does the number of parameters required to completely specify the kinetic model between all pairs of states. Because the amount of data is constant, each additional parameter leads to a decrease in the amount of data available per model parameter, which makes the approach susceptible to over-fitting.
 
-Here, we seek to build models that are \emph{suitably} complex, given the data, yielding complex descriptions of the system only to the extent that their additional parameters are implied by the observed dynamics. To that end, we introduce a procedure for scoring the likelihood of an MSM, which, together with standard statistical model selection techniques, enables the optimal selection of the state space, which we express both in terms of the number of states and the clustering algorithm employed to group sampled conformations into states. This approach complements validation procedures performed primarily based on human intuition, such as Chapman-Kolmogorov tests, and enables the treatment of model selection as an optimization problem amenable to automated methods.
+Two competing sources of error govern the accuracy of an MSM. The first source of error is systematic and is common to all dimensionality reduction methods. \hl{Any simplified representation of a complex system cannot generally describe arbitrary behavior of that system losslessly.} The second source of error is statistical in nature, in that the parameters of an MSM must be estimated from a finite number of stochastic MD trajectories. \hl{As we discuss later,?} These two sources of error compete in a bias-variance tradeoff\cite{bias_variance_paper}. Given a finite size data set, as the number of states increases, the systematic error (the bias) decreases, while the statistical error (the variance) increases.
+
+Here, we seek to build models that are \emph{suitably} complex, given the data, yielding complex descriptions of the system only to the extent that their additional parameters are implied by the observed dynamics. To that end, we introduce a procedure for scoring the likelihood of an MSM, which, together with standard statistical model selection techniques, enables a balanced selection of the model's parameters. 
 
 \section{Background}
-\begin{itemize}
-\item For some system, we are interested in describing the arbitrarily long timescale dynamics. 
-\item define the phase space, and then an ensemble of systems propagating through phase space. 
-\item There exists an operator such that operator of p(0) is p(t). Formally this operator is dependent on the hamiltonian
-\item This operator has a set of characteristic timescales (and eigenvectors) such that p at t + ntau can be decomposed into a sum of exponential relaxation processes along each eigenvector (show the equation)
-\item A central focus for MD, is the estimation of the transfer operator 
-\item Calculating the hamiltonian integral is not possible, but estimators are available based on sampling the hamiltonian (MD) 
-\item One framework for estimating the transfer operator is the discrete-time Markov State Model (MSM), which is a projection of the operator onto an indicator function basis set. 
-\item The MSM is parameterized by a set of states corresponding to the indicator functions defined on phase space as well as the transition probabilities for transitioning between any state to any other state at a lag time (tau)
-\item It has been shown that using a finite number of discrete states in phase space, estimates of the transfer operator's timescales are biased to be too fast. 
-\item This result implies that one can always do better by varying the parameters  to increase the timescales (include the idea of a variational principle)
-\item However, these results are proved based on the assumption of infinite data, which is never the case
-\end{itemize}
-\section{another section}
-\begin{itemize}
-\item We always have finite data, and so this variational approach ignores another source of error due to the statistical error
-\item What we really want is a model that reproduces the dynamics due to the hamiltonian
-\item In practice, the transfer operator is inaccessible, and what you have is data and a model that attempts to describe the data.
-\item But the only way to access the true transfer operator is to sample from it and produce new data. Therefore, we should actually attempt to estimate a model that can best predict new data.
-\item This MSM has since been referred to as an object that takes in data, but in fact (as it is generative) we are parameterizing it to generate new data. 
-\item So if we build many MSMs, the ``best" model is the one that is most likely to have produced the newly observed data. 
-\item This means that we should construct a model such that it assigns a high probability to the new data. 
-\item This is precisely the idea of cross-validation or BIC/AIC (maybe we should define them here).
-\item The true data is a random variable (that we can sample), but in an MSM, the trajectory sampled is a random variable
-\end{itemize}
+Let $\mathbf{x}_t$ be a ergodic time-homogenous Markov process the phase space $\Omega$ with stationary density $\mu(\mathbf{x})$. Consider an ensemble of such processes at time $t$, described by a distribution $p_t(\mathbf{x})$. There exists an operator, termed the propagator, that evolves the a distribution forward in time at discrete intervals, $\tau$.
+$$
+p_{t+\tau}(\mathbf{x}) = \mathcal{Q}^{(\tau)} \circ p_{t}(\mathbf{x})
+$$
+
+The eigenfunctions of the propagator form a basis for $p(\mathbf{x})$, and the time evolution of the ensemble after $n$ applications of the propagator can be decomposed into a sum of terms along each eigenfunction.
+$$
+p_{t+n\tau}(\mathbf{x}) = \sum_{i=1}^\infty \exp\left(-\frac{n \cdot \tau}{t_i}\right) \langle \phi_i, p_t \rangle_{\mu^{-1}} \phi_i(\mathbf{x}),
+$$
+where $t_i = -\displaystyle\frac{\tau}{\ln \lambda_i}$ are the propagator's relaxation timescales and $\phi_i$ and $\lambda_i$ are the eigenfunctions and eigenvalues of the propagator, and $\langle \cdot, \cdot \rangle_{\mu^{-1}}$ denotes the inner product defined as
+$$
+\langle \phi_i, p_t \rangle_{\mu^{-1}} = \int_\Omega d\mathbf{x}\; \phi_i(\mathbf{x}) p_t(\mathbf{x}) \frac{1}{\mu(\mathbf{x})}.
+$$
+For a more detailed discussion of the propagator and its properties, we refer the reader to \citet{Prinz2011Generation}.
+
+For classical MD, $\mathcal{Q}^{(\tau)}$ is uniquely determined by the Hamiltonian and equations of motion\cite{}. However, it is not practical to explicitly construct the propagator from the Hamiltonian for complex systems. A Markov model provides an estimate for the propagator. A $k$-state Markov model is defined on a discrete set of states, $S = \{s_i\}_{i=1}^k$, where $s_i \subseteq \Omega$ and $\bigcup_{i=1}^k s_i = \Omega$. Furthermore, $s_i \cap s_j = \emptyset$ for all $i \neq j$. In words, every point in $\Omega$ is assigned to one (and only one) state in the MSM. Let $\sigma(\mathbf{x})$ be the function that maps a point $\mathbf{x} \in \Omega$ to the index $i$ of the state in $S$ such that $x \in s_i$.
+
+The MSM models the \hl{action?} of the propagator with a Markov jump process on $\{1, \ldots, k\}$. Let $\mathbf{p} \in (\mathbb{R} \cap [0,1])^k$ be a column vector whose entries sum to one. The MSM approximates $p(\mathbf{x})$ by
+$$
+p(\mathbf{x}) = \sum_{i=1}^{k} p_i \; \mathbf{1}_{s_i}(\mathbf{x}),
+$$
+where
+$$
+\mathbf{1}_{s}(\mathbf{x}) = \left\{\begin{array}{cc}
+1 & \mathbf{x} \in s \\
+0 & \text{otherwise}
+\end{array}\right.
+$$
+Consider a probability vector at time $t$ denoted $\mathbf{p}(t)$. The time-evolution of $\mathbf{p}(t)$ is described by
+$$
+\mathbf{p}(t+\tau)^T = \mathbf{p}(t)^T \mathbf{T},
+$$
+where $T_{ij}$ is the probability of transiting to state $j$ in time $\tau$ given that the system started in state $i$. With this construction, the eigenvalues and eigenvectors of $\mathbf{T}$ \hl{provide approximations (what about transfer operator?)} for the eigenvalues and eigenfunctions of $\mathcal{Q}$.
+
+
+Let $D$ be a set of molecular dynamics trajectories in $\Omega$. To construct an MSM, both $S$ and $\mathbf{T}$ must be determined from the data. ${S}$ is defined by $\sigma$, which can be constructed by clustering the points in $D$. Given $S$, maximum-likelihood estimators for the the transition probabilities $\mathbf{T}$ exist\cite{kyle, frank}.
+
+Using this procedure, it has been shown that MSM estimates of the eigenvalues $\lambda_i$ are systematically underestimated in the limit of infinite data, and that the magnitude of this bias goes to zero as $k\rightarrow \infty$. This fact has inspired the development of variational methods for model selection, which optimize the MSM parameters in order to maximize the eigenvalues.
+
 
 \section{bayesian statistics}
 \begin{itemize}
@@ -91,7 +107,7 @@ Here, we seek to build models that are \emph{suitably} complex, given the data, 
 
 Given a Markov model parameterized at a lag time of $\tau$, we can propagate ensembles of trajectories via the transition probability matrix:
 $$\mathbf{p}_\tau^T = \mathbf{p}_0^T T(\tau)$$ where $\mathbf{p}_t$ is a probability distribution over states at time $t$ and $T(\tau)$ is a matrix with entries corresponding to the probability of transferring from one state to another at a time of $\tau$. As suggested by \citet{Swope2004Describing}, given a Markov model at a lag time of $\tau$, $T(\tau)$, we expect that a different model with a lag time of $n\tau$ should merely be the $n^\textnormal{th}$ power of $T(\tau)$:
-$$\mathbf{p}_{n\tau}^T = \mathbf{p}_0^T T(n\tau) = \mathbf{p}_0^T \left[T(\tau)\right]^n $$ As such, the eigenvalues and eigenvectors of models built at many lag times are related. Specifically, when building multiple models for the same dataset, the eigenvectors should be invariant to changing lag time, while the eigenvalues change via the relation:
+$$\mathbf{p}_{n\tau}^T = \mathbf{p}_0^T T(n\tau) = \mathbf{p}_0^T \left[T(\tau)\right]^n $$ As such, the eigenvalues and eigenvectors of models built at many lag times are related. Specifically, when building multiple models for the same data set, the eigenvectors should be invariant to changing lag time, while the eigenvalues change via the relation:
 $$\lambda(\tau)^n = \lambda(n \tau)$$ The largest, non-unit eigenvalues correspond to the slowest timescales in the data. It's often useful to compute the slowest implied timescales ($t_i$) via the relation:
 $$t_i = - \frac{\tau}{\log \lambda_i} $$ These implied timescales should be invariant with respect to the lag time and therefore provide a useful tool for testing the quality of an MSM. Specifically, many models are built at varying lag times, and one is selected by choosing the model whose timescales have converged.
 
