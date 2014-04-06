@@ -1,6 +1,6 @@
 %\documentclass[twocolumn,floatfix,nofootinbib,acs]{revtex4-1}
 \documentclass[journal=jpcbfk, layout=traditional, manuscript=article]{achemso}
-\setkeys{acs}{articletitle = true}
+% \setkeys{acs}{articletitle = true}
 \usepackage[utf8]{inputenc}
 
 
@@ -57,7 +57,7 @@ Markov state models (MSMs) are one approach for analyzing MD data sets that are 
 
 %A significant challenge in the automated construction of Markov state models is the choice of the number of states\cite{McGibbon2013Learning}. Although classical Hamiltonian dynamics with $N$ particles form a continuous-time Markov chain in $\mathbb{R}^{6N}$, the projection of this high-dimensional process into a lower dimensional space (such as the discrete indicator functions used by MSMs) is generally governed by non-Markovian dynamics\cite{van1992Stochastic}. \hl{In the Morri-Zwanzig approach, this corresponds to the generalized Langevin equation with a nontrivial memory kernel}(What is this about?)\cite{ZM}. Within the MSM context, on the other hand, this means that first order Markov chains incur a systematic error in their modeling of the high-dimensional system. In particular, when MSM states contain within them kinetic barriers of substantial magnitude, the bias due to the first-order Markov approximation is large. While this source of modeling error can be addressed by increasing the number of states, the reduction in one error comes at the expense of the increase in another. This second source of error is statistical in origin. As the number of states in the model grows, so does the number of parameters required to completely specify the kinetic model between all pairs of states. Because the amount of data is constant, each additional parameter leads to a decrease in the amount of data available per model parameter, which makes the approach susceptible to over-fitting.
 
-Two competing sources of error govern the accuracy of an MSM. The first source of error is systematic and is common to all dimensionality reduction methods. \hl{Any simplified representation of a complex system cannot generally describe arbitrary behavior of that system losslessly.} The second source of error is statistical in nature, in that the parameters of an MSM must be estimated from a finite number of stochastic MD trajectories. \hl{As we discuss later,?} These two sources of error compete in a bias-variance tradeoff\cite{bias_variance_paper}. Given a finite size data set, as the number of states increases, the systematic error (the bias) decreases, while the statistical error (the variance) increases.
+Two competing sources of error govern the accuracy of an MSM. The first source of error is systematic and is common to all dimensionality reduction methods, in that simplified representations of complex systems discard information. The second source of error is statistical in nature, in that the parameters of an MSM must be estimated from a finite number of stochastic MD trajectories. As we discuss below, these two sources of error compete in a bias-variance tradeoff\cite{bias_variance_paper}. Given a finite size data set, as the number of states increases, the systematic error (the bias) decreases, while the statistical error (the variance) increases.
 
 Here, we seek to build models that are \emph{suitably} complex, given the data, yielding complex descriptions of the system only to the extent that their additional parameters are implied by the observed dynamics. To that end, we introduce a procedure for scoring the likelihood of an MSM, which, together with standard statistical model selection techniques, enables a balanced selection of the model's parameters. 
 
@@ -79,7 +79,7 @@ For a more detailed discussion of the propagator and its properties, we refer th
 
 For classical MD, $\mathcal{Q}^{(\tau)}$ is uniquely determined by the Hamiltonian and equations of motion\cite{}. However, it is not practical to explicitly construct the propagator from the Hamiltonian for complex systems. A Markov model provides an estimate for the propagator. A $k$-state Markov model is defined on a discrete set of states, $S = \{s_i\}_{i=1}^k$, where $s_i \subseteq \Omega$ and $\bigcup_{i=1}^k s_i = \Omega$. Furthermore, $s_i \cap s_j = \emptyset$ for all $i \neq j$. In words, every point in $\Omega$ is assigned to one (and only one) state in the MSM. Let $\sigma(\mathbf{x})$ be the function that maps a point $\mathbf{x} \in \Omega$ to the index $i$ of the state in $S$ such that $x \in s_i$.
 
-The MSM models the \hl{action?} of the propagator with a Markov jump process on $\{1, \ldots, k\}$. Let $\mathbf{p} \in (\mathbb{R} \cap [0,1])^k$ be a column vector whose entries sum to one. The elements in $\mathbf{p}$ are defined by a coarse-graining of $p(\mathbf{x})$ over $S$, as
+The MSM models the dynamics of the propagator with a Markov jump process on $\{1, \ldots, k\}$. Let $\mathbf{p} \in (\mathbb{R} \cap [0,1])^k$ be a column vector whose entries sum to one. The elements in $\mathbf{p}$ are defined by a coarse-graining of $p(\mathbf{x})$ over $S$, as
 \begin{equation}
 \label{eq:coarse-grain-p}
 p_i = \int_{\mathbf{x} \in s_i} d\mathbf{x}\; p(\mathbf{x}).
@@ -88,7 +88,7 @@ Consider a probability vector at time $t$ denoted $\mathbf{p}(t)$. The time-evol
 \begin{equation}
 \mathbf{p}(t+\tau)^T = \mathbf{p}(t)^T \mathbf{T},
 \end{equation}
-where $T_{ij}$ is the probability of transiting to state $j$ in time $\tau$ given that the system started in state $i$. With this construction, the eigenvalues and eigenvectors of $\mathbf{T}$ \hl{provide approximations (what about transfer operator?)} for the eigenvalues and eigenfunctions of $\mathcal{Q}$. In a direct analogy with \cref{eq:prop-timescales}, the eigenvalues $\lambda_i$ of $T$ correspond to relaxation timescales of the Markov model
+where $T_{ij}$ is the probability of transiting to state $j$ in time $\tau$ given that the system started in state $i$. With this construction, the eigenvalues and eigenvectors of $\mathbf{T}$ provide approximations for the eigenvalues and eigenfunctions of $\mathcal{Q}$. In a direct analogy with \cref{eq:prop-timescales}, the eigenvalues $\lambda_i$ of $T$ correspond to relaxation timescales of the Markov model
 \begin{equation}
 \label{eq:msm-timescales}
 t_i = -\frac{\tau}{\ln \lambda_i}.
@@ -102,7 +102,7 @@ Using this procedure, it has been shown that MSM estimates of the eigenvalues $\
 Selecting the size of $S$ is an important step in model construction, however there is not currently a widely-accepted method in use. Heuristic criteria, such as manually selecting $k = n_\textnormal{conformation} / 14$ or clustering $D$ such that each conformation is within a pre-specified distance to its cluster center (e.g. 4.5\AA$\;$ or 1.2\AA $\;$ RMSD) have been previously employed\cite{Lane2012, Bowman2012, Beuchamp}. Selection of $\tau$ based convergence of the relaxation timescales (\cref{eq:msm-timescales}), as suggested by \citet{Swope2004Describing} and others is more well established. The rate of this convergence with respect to $\tau$ at fixed $S$ has also been used as a metric for evaluating a model's state decomposition. \hl{cite someone?}
 
 \section{The Bias-Variance Dilemma}
-For MSM methods to be valuable to practitioners, they must operate in limited data regimes. Thus, we seek a method for model selection that is sensitive to both the systematic error discussed above, as well as the statistical error associated with estimating the model's parameters. Whereas model selection based on the variational principle described above would tend to increase the number of states without bound, as the magnitude of the eigenvalue bias decreases with the number of states, practical application of this criteria would cause a catastrophic increase in statistical uncertainty in the model. This tradeoff between low-variance (small $k$) but biased estimators, and high-variance (large $k$) but unbiased estimators is a general feature of problems in statistical learning\cite{}. For example, as we show in appendix A, the uncertainty in the posterior distribution of $\mathbf{T}$ given $S$ and $D$ grows as $O(k)$.
+For MSM methods to be valuable to practitioners, they must operate in limited data regimes. Thus, we seek a method for model selection that is sensitive to both the systematic error discussed above, as well as the statistical error associated with estimating the model's parameters. Whereas model selection based on the variational principle described above would tend to increase the number of states without bound, as the magnitude of the eigenvalue bias decreases with the number of states, practical application of this criteria would cause a catastrophic increase in statistical uncertainty in the model. This tradeoff between low-variance (small $k$) but biased estimators, and high-variance (large $k$) but unbiased estimators is a general feature of problems in statistical learning\cite{}. For example, it can be shown that the uncertainty in the posterior distribution of $\mathbf{T}$ given $S$ and $D$ approaches infinity as $k$ approaches infinity.
 
 Introduction to MSMs via the propagator theory motivates the view of the parameterization problem as one of \emph{function estimation}. This perspective has a critical disadvantage: the natural error metric -- the difference between the estimated MSM and true propagator is intrinsically uncomputable. The only access to the true propagator is via samples from the Hamiltonian with MD. Therefore, a compelling alternative is to view the problem as one of \emph{prediction}. Since the MSM is a generative model for trajectories in $\Omega$, it is possible to sample ``pseudo-trajectories" directly from the MSM. If the MSM were perfect, these ``pseudo-trajectories" would be indistinguishable from trajectories generated by the true propagator. Thus, the probability assigned by the MSM, to samples from the true propagator is a measure of the MSM's accuracy. This argument is formalized by Bayes' rule, which establishes a proportionality between the probability of a model given data to the probability of the data given the model
 \begin{equation}
@@ -167,6 +167,7 @@ A further challenge is the description of the states that are at the edge of the
 
 \begin{algorithm}
 \caption{Monte Carlo Estimation of the State Volumes}
+\label{alg:volumes}
 \begin{algorithmic}[1]
 \Procedure{MC Volume Estimation}{$\sigma, A, M$}
 	\State $\mathbf{c} \gets [0, 0, \ldots, 0]$\Comment{$\mathbf{c}$ is a vector of length $k$}
@@ -212,7 +213,7 @@ For both the M\"{u}ller potential and WW models, a maximum likelihood estimator 
 \section{Results and Discussion}
 \subsection{M\"{u}ller Potential}
 
-How well can likelihood-based methods select parameters for an MSM in the data-rich regime? To answer this question, we simulated a simple two-dimensional potential and built a series of MSMs (see ``Methods"). We compared four different model selection criteria: (1) test log-likelihood (2) BIC (3) AIC and (4) implied timescales convergence. The analysis \cref{fig:mullerlike} indicates that the log-likelihood on the training data set continually increases with the addition of further states. The increase is most dramatic at low $k$, and levels off at high $k$, indicating that once $k$ is large enough, the marginal increase in the likelihood with respect to further states is small. For this data set, the log-likelihoods computed on a separate test set exhibit a notably similar trend. Above $k=600$, the test log-likelihood stops increasing. These two trends are to be expected: the additional parameters in the model at higher $k$ never decreases the model's ability to fit the training data. On the other hand, this can lead to the model fitting the statistical noise in the training data set, rather than the system's true dynamics. As result, these "over fit" models at high $k$ are less predictive, as measured by the log-likelihood they assign to new test data.
+How well can likelihood-based methods select parameters for an MSM in the data-rich regime? To answer this question, we simulated a simple two-dimensional potential and built a series of MSMs (see \emph{Methods}). We compared four different model selection criteria: (1) test log-likelihood (2) BIC (3) AIC and (4) implied timescales convergence. The analysis \cref{fig:mullerlike} indicates that the log-likelihood on the training data set continually increases with the addition of further states. The increase is most dramatic at low $k$, and levels off at high $k$, indicating that once $k$ is large enough, the marginal increase in the likelihood with respect to further states is small. For this data set, the log-likelihoods computed on a separate test set exhibit a notably similar trend. Above $k=600$, the test log-likelihood stops increasing. These two trends are to be expected: the additional parameters in the model at higher $k$ never decreases the model's ability to fit the training data. On the other hand, this can lead to the model fitting the statistical noise in the training data set, rather than the system's true dynamics. As result, these "over fit" models at high $k$ are less predictive, as measured by the log-likelihood they assign to new test data.
 
 Leaving out a portion of a molecular dynamics data set from the training to serve as a test set is costly proposition for the applications of MSMs to the study of complex system. For large bimolecular simulations characterized by long intrinsic timescales, sampling the potential exhaustively is a significant challenge\cite{Lane2012}, making it difficult to afford discarding half of the dataset during the fitting of an MSM. For this reason, we also computed two penalized likelihood model selection criteria, the AIC and BIC, which augment the training set log-likelihood with an explicit penalty on model complexity to avoid over fitting. Applied to our simulations of the M\"{u}ller potential, both the AIC and BIC penalize model complexity more strongly than the test set log-likelihood.
 
@@ -223,7 +224,7 @@ The likelihood-based methods are consistent with model selection based on maximi
 \begin{figure}[h]
 \centering
 \includegraphics[width=6in]{figs/mull/mull.pdf}
-\caption{\hl{Fix this figure so that only part (A) is depicted.} We calculated the training and test set log-likelihoods and model selection criteria for models built with 50-1000 states using the uniform emission distribution. Dashed lines represent the optimal model as defined by the AIC, BIC, or test set log-likelihood and form the boundaries of the optimal window (shaded dark gray). For both likelihoods, the BIC penalizes complexity more than the AIC and test set log-likelihood. The optimal window is consistent with the convergence of the relaxation timescales (right frames).}
+\caption{Four model selection criteria were used (left panel) to select the state discretization for MSMs built on simulations of the M\"{u}ller potential. The log-likelihood was evaluated on the training set (black) and a separate test set (blue). These values are plotted as $-2\cdot \log L$ for ease of comparison with the BIC (red) and AIC (purple). Lower scores indicate better models. Dashed lines are used to indicate criterion-minimizing models. These criteria are consistent with the convergence of the implied timescales (right panel).}
 \label{fig:mullerlike}
 \end{figure}
 
@@ -232,35 +233,38 @@ As shown in \cref{fig:mullerlike}, models built with too few states achieve a dr
 The AIC and BIC penalize the larger state models much more than the test set log-likelihood. It's not clear why the test log-likelihood is more lenient, however, it suggests that when possible, one should use a test log-likelihood approach as opposed to an approximate method like the AIC or BIC. This cross-validation requires fitting multiple models on subsets of the data, and so is not feasible for larger systems in the data-poor regime.
 
 \subsection{Fip35 WW Domain}
+How appropriate are likelihood-based model selection criteria for more realistic MD data sets? To answer this questions, we constructed Markov models based on simulations of the Fip35 WW domain\cite{Liu2008Experimental} performed on the Anton
+supercomputer\cite{Shaw2010Atomic}. As a preprocessing step, we used time-structure based independent components analysis (tICA) to project the data into a four dimensional space. This procedure was necessary in order to compute the volumes of the MSM states, as described in \cref{alg:volumes}. MSMs were constructed in this lower dimensional space with differing number of states using the k-centers clustering algorithm (see \emph{Methods}).
 
-Because the likelihood calculations involving the uniform distribution emission model have exponential complexity in the dimensionality of the state space we first preprocess the trajectories with a dimensionality reduction technique.
+As was the case with the M\"{u}ller MSMs, the log-likihood of the training data set increases with the addition of more states, while the test log-likelihood, AIC and BIC lack a monotonic trend (\cref{fig:ww-tica}). The test log likelihood has a maximum at 650 states, and decreases with the addition of further states. This trend is matched by the AIC, which is computed only on the training data, while the BIC on the other hand seems to over-penalize model complexity. The implied timescales of these MSMs converge rapidly, and selection based on their convergence is consistent with the statistical methods.
+
 \begin{figure}
 \centering
+\label{fig:ww-tica}
 \includegraphics[width=6in]{figs/ww_tica/ww_tica.pdf}
-\caption{\hl{Fix this figure so that only part (A) is depicted.} On models whose states were defined after projecting into the four-dimensional tICA subspace, we computed likelihoods based on the uniform emission models. Dashed lines represent the optimal model as defined by the AIC, BIC, or test set log-likelihood and form the boundaries of the optimal window (shaded dark gray). \label{fig:ww}}
+
+\caption{MSMs for the Fip35WW domain built with tICA were evaluated based on four model selection criteria. The log-likelihood was evaluated on the training set (black) and a separate test set (blue), and compared with the AIC (purple) and BIC (red) penalized log-likelihoods, computed on the training set. Dashed lines are used to indicate criterion-minimizing models. The models' ten slowest relaxation timescales (shown in the right panel) converge rapidly. \hl{right panel should be linear scale instead, for consistency with the PCA}}
 \end{figure}
 
-For the models built in the tICA subspace, the AIC is comparable to the test set log-likelihood scores using either emission model, displaying a optimum at ~600 states (\cref{fig:ww}). The BIC penalizes complexity more strongly with an optimum at ~150 states. This window is consistent with the convergence of the relaxation timescales and the onset of Markovian behavior. Models built with RMSD require significantly more states than the tICA MSMs and show poor timescale convergence. These results indicate why model selection based on relaxation timescales is so difficult, as a less than optimal state decomposition can result in timescales that do not converge rapidly (if at all). Furthermore, selection based on only the relaxation timescales contains no guard against over-fitting, which is of particular concern in the models built using RMSD that require thousands of states.
+We also built a series of models on the same data set by replacing the tICA preprocessing with Principal Components Analysis (PCA). We projected the data set onto the top three principal components, which are the highest-variance uncorrelated linear combinations of the input degrees of freedom (see \emph{Methods}). Because PCA does not explicitly take into account the temporal structure of the data set, we expected that MSMs based on PCA would be less predictive than those based on tICA. Our results, shown in \cref{fig:ww-pca}, confirm this hypothesis. We built MSMs with as many as 25,000 states, and saw a linear trend in the longest relaxation timescale with respect to the number of states.
+
+The statistical model selection methods indicate that we are only justified in using models with $k$ on the order of 100. The AIC, BIC and test set log-likelihood criteria each recommend a model built with 200 states, which is also the point just after the most dramatic increase in the longest relaxation timescale occurs with respect to $k$. On the other hand, the relaxation timescales continue to increase further, even as the test set log likelihood begins to decrease after 1000 states.
+
 
 \begin{figure}
 \centering
+\label{fig:ww-pca}
 \includegraphics[width=6in]{figs/ww_pca/ww_pca.pdf}
-\caption{For MSMs of the WW domain built on the top three PCA components,} 
+\caption{The four selection criteria were used to compare MSMs for the Fip35WW domain built with PCA. The longest relaxation timescale (right panel) exhibits a linear increase up to 25,000 states. The AIC (blue), BIC (red) and test set log-likelihood each recommend a model with 200 states.} 
 \end{figure}
 
-%The two 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain simulated by \citet{Shaw2010Atomic} have been used to parameterize multiple Markov state models. \citet{Lane2011Markov} proposed a 26,000 state MSM after clustering the data by RMSD, whereas Kellogg et al.,\cite{Kellogg2012Evaluation} clustering on contact maps or secondary structure, proposed 100 and 175 state models, respectively. Consistent with this spread, we find the optimal number of states to be highly dependent on the space in which the data is clustered. With RMSD, the Gaussian likelihood indicates that Markov models built with on the order of 5,000 states optimally balance model quality and generalization error. On the other hand, the tICA method's identification of slow order parameters in the simulations has the effect of reducing the number of states necessary when constructing Markov models. While only using 200-600 states, Markov models constructed using tICA were still able to recapitulate the folding timescale as well as the faster processes identified by McGibbon and Pande\cite{McGibbon2013Learning}.
-
-\subsection{Limitations and Future Work}
-
-The likelihood functions described herein permit the comparison of Markov state models with varying number of states, however, they require that the compared models have the same support. As such, a direct comparison of the likelihoods between models built with tICA and models built with RMSD is not possible. Furthermore, the uniform emission model is intractable for all but the simplest systems. The Gaussian emission model does not have this limitation.
-
-In the future, we plan to extend this work to the consideration of models without discrete states, where the requirement that states strictly partition phase space into a set of discrete indicator functions is relaxed and the models are parameterized by a direct optimization of \cref{eq:like}. This strategy would complement approaches that generalize MSMs beyond discrete states\cite{Noe2013Variational}.
+The likelihood functions described herein permit the comparison of Markov state models with varying number of states, however, they require that the compared models have the same support. As such, a direct comparison of the likelihoods between models built with tICA and models built with PCA is not justified.
 
 \section{Conclusions}
 
 Markov State Models are powerful and popular frameworks for the analysis of molecular simulations, with a growing literature and two open source software tools\cite{Beauchamp2011Msmbuilder2, Senne2012EMMA}. There are, however a number of steps in the construction process that require hand-tuning, which limits the use of MSMs to experts and introduces significant biases into the model building process. Additionally, the ability to automatically construct MSMs on the fly while simulations are in progress, an important point for so-called adaptive sampling procedures\cite{Bowman2010Enhanced}, is hampered when manual model selection is required. 
 
-These results take a step toward fully automating the MSM construction process and controlling the complexity and generalization error by providing a quantitative method for selecting the most suitably complex model, given the data.
+In the future, we plan to extend this work to the consideration of models without discrete states, where the requirement that states strictly partition phase space into a set of discrete indicator functions is relaxed and the models are parameterized by a direct optimization of \cref{eq:like}. This strategy would complement approaches that generalize MSMs beyond discrete states\cite{chiang2010markov, Noe2013Variational}.
 
 \begin{acknowledgement}
 It is an honor and a pleasure to contribute this paper to the Swope Festschrift.  I (V.S.P.) have been working with Bill since my early days at Stanford and have benefitted greatly from our numerous interactions with him.  Bill's insight, clarity of thought, and careful approach has influenced my lab's work very broadly.  I am very pleased that our collaborations continue through today and look forward to many more in the future.
@@ -268,7 +272,8 @@ It is an honor and a pleasure to contribute this paper to the Swope Festschrift.
 
 \bibliography{bibliography}
 
-\section{Appendix}
+\end{document}
+
 \subsection{Other emission distributions}
 
 A more tractable alternative to the uniform distribution is a Gaussian emission model where $P(\mathbf{x} | s(\mathbf{x}))$ is modeled as multivariate normal \cref{eq:like_mvn}.
@@ -301,7 +306,7 @@ We tested the Gaussian likelihood on MSMs built using k-means clustering on the 
 We also tested the Gaussian likelihood on the same WW simulations as discussed above. The complexity of evaluating the Gaussian emission model likelihood does not increase with respect to dimension. Thus we used the Gaussian emission model with both the four-dimensional tICA models and those built using k-centers clustering with the minimal cartesian root-mean squared deviation (RMSD) over Fip35's 252 non-redundant heavy atoms, computed using the quaternion characteristic polynomial method\cite{Theobald2005Rapid}. For evaluating the Gaussian emission likelihood, we used a value of $3 \cdot 252 - 6 = 750$ for the dimension of the emission distribution.
 
 
-\end{document}
+
 
 
 In the finite-data regime, additional complexity in the Markov model, in the form of increasing number of states, does come at a statistical cost.
