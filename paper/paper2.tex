@@ -16,6 +16,8 @@
 \usepackage{soul}
 \usepackage{bm}
 \usepackage{achemso}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \title{Statistical Model Selection for Markov Models of Biomolecular Dynamics}
 \author{Christian R. Schwantes}
@@ -61,124 +63,71 @@ Here, we seek to build models that are \emph{suitably} complex, given the data, 
 
 \section{Background}
 Let $\mathbf{x}_t$ be a ergodic time-homogenous Markov process the phase space $\Omega$ with stationary density $\mu(\mathbf{x})$. Consider an ensemble of such processes at time $t$, described by a distribution $p_t(\mathbf{x})$. There exists an operator, termed the propagator, that evolves the a distribution forward in time at discrete intervals, $\tau$.
-$$
+\begin{equation}
 p_{t+\tau}(\mathbf{x}) = \mathcal{Q}^{(\tau)} \circ p_{t}(\mathbf{x})
-$$
-
+\end{equation}
 The eigenfunctions of the propagator form a basis for $p(\mathbf{x})$, and the time evolution of the ensemble after $n$ applications of the propagator can be decomposed into a sum of terms along each eigenfunction.
-$$
+\begin{equation}
 p_{t+n\tau}(\mathbf{x}) = \sum_{i=1}^\infty \exp\left(-\frac{n \cdot \tau}{t_i}\right) \langle \phi_i, p_t \rangle_{\mu^{-1}} \phi_i(\mathbf{x}),
-$$
+\end{equation}
 where $t_i = -\displaystyle\frac{\tau}{\ln \lambda_i}$ are the propagator's relaxation timescales and $\phi_i$ and $\lambda_i$ are the eigenfunctions and eigenvalues of the propagator, and $\langle \cdot, \cdot \rangle_{\mu^{-1}}$ denotes the inner product defined as
-$$
+\begin{equation}
 \langle \phi_i, p_t \rangle_{\mu^{-1}} = \int_\Omega d\mathbf{x}\; \phi_i(\mathbf{x}) p_t(\mathbf{x}) \frac{1}{\mu(\mathbf{x})}.
-$$
+\end{equation}
 For a more detailed discussion of the propagator and its properties, we refer the reader to \citet{Prinz2011Generation}.
 
 For classical MD, $\mathcal{Q}^{(\tau)}$ is uniquely determined by the Hamiltonian and equations of motion\cite{}. However, it is not practical to explicitly construct the propagator from the Hamiltonian for complex systems. A Markov model provides an estimate for the propagator. A $k$-state Markov model is defined on a discrete set of states, $S = \{s_i\}_{i=1}^k$, where $s_i \subseteq \Omega$ and $\bigcup_{i=1}^k s_i = \Omega$. Furthermore, $s_i \cap s_j = \emptyset$ for all $i \neq j$. In words, every point in $\Omega$ is assigned to one (and only one) state in the MSM. Let $\sigma(\mathbf{x})$ be the function that maps a point $\mathbf{x} \in \Omega$ to the index $i$ of the state in $S$ such that $x \in s_i$.
 
-The MSM models the \hl{action?} of the propagator with a Markov jump process on $\{1, \ldots, k\}$. Let $\mathbf{p} \in (\mathbb{R} \cap [0,1])^k$ be a column vector whose entries sum to one. The MSM approximates $p(\mathbf{x})$ by
-$$
-p(\mathbf{x}) = \sum_{i=1}^{k} p_i \; \mathbf{1}_{s_i}(\mathbf{x}),
-$$
-where
-$$
-\mathbf{1}_{s}(\mathbf{x}) = \left\{\begin{array}{cc}
-1 & \mathbf{x} \in s \\
-0 & \text{otherwise}
-\end{array}\right.
-$$
+The MSM models the \hl{action?} of the propagator with a Markov jump process on $\{1, \ldots, k\}$. Let $\mathbf{p} \in (\mathbb{R} \cap [0,1])^k$ be a column vector whose entries sum to one. The elements in $\mathbf{p}$ are defined by a coarse-graining of $p(\mathbf{x})$ over $S$, as
+\begin{equation}
+\label{eq:coarse-grain-p}
+p_i = \int_{\mathbf{x} \in s_i} d\mathbf{x}\; p(\mathbf{x}).
+\end{equation} 
 Consider a probability vector at time $t$ denoted $\mathbf{p}(t)$. The time-evolution of $\mathbf{p}(t)$ is described by
-$$
+\begin{equation}
 \mathbf{p}(t+\tau)^T = \mathbf{p}(t)^T \mathbf{T},
-$$
+\end{equation}
 where $T_{ij}$ is the probability of transiting to state $j$ in time $\tau$ given that the system started in state $i$. With this construction, the eigenvalues and eigenvectors of $\mathbf{T}$ \hl{provide approximations (what about transfer operator?)} for the eigenvalues and eigenfunctions of $\mathcal{Q}$.
 
 
-Let $D$ be a set of molecular dynamics trajectories in $\Omega$. To construct an MSM, both $S$ and $\mathbf{T}$ must be determined from the data. ${S}$ is defined by $\sigma$, which can be constructed by clustering the points in $D$. Given $S$, maximum-likelihood estimators for the $O(k^2)$ transition probabilities $\mathbf{T}$ exist\cite{kyle, frank}.
+Let $D$ be a set of molecular dynamics trajectories in $\Omega$. To construct an MSM, both $S$ and $\mathbf{T}$ must be determined from the data. The state-space, $S$, can be constructed by clustering the points in $D$ or via a grid-based discretization of $\Omega$. Given $S$, maximum-likelihood estimators for the $O(k^2)$ transition probabilities $\mathbf{T}$ exist\cite{kyle, frank}.
 
 Using this procedure, it has been shown that MSM estimates of the eigenvalues $\lambda_i$ are systematically underestimated in the limit of infinite data, and that the magnitude of this bias goes to zero as $k\rightarrow \infty$. This fact has inspired the development of variational methods for model selection, which optimize the MSM parameters in order to maximize the eigenvalues \cite{feliks}.
 
-\section{Statistical Model Selection}
+\section{The Bias-Variance Dilemma}
 For MSM methods to be valuable to practitioners, they must operate in limited data regimes. Thus, we seek a method for model selection that is sensitive to both the systematic error discussed above, as well as the statistical error associated with estimating the model's parameters. Whereas model selection based on the variational principle described above would tend to increase the number of states without bound, as the magnitude of the eigenvalue bias decreases with the number of states, practical application of this criteria would cause a catastrophic increase in statistical uncertainty in the model. This tradeoff between low-variance (small $k$) but biased estimators, and high-variance (large $k$) but unbiased estimators is a general feature of problems in statistical learning\cite{}. For example, as we show in appendix A, the uncertainty in the posterior distribution of $\mathbf{T}$ given $S$ and $D$ grows as $O(k)$.
 
-Introduction to MSMs via the propagator theory motivates the view of the parameterization problem as one of \emph{function estimation}. This perspective has a critical disadvantage: the natural error metric -- the difference between the estimated MSM and true propagator is intrinsically uncomputable. Instead, a compelling alternative is to view the problem as one of time series \emph{prediction}. We attempt to build models which predict new data. Here, the quality of the prediction (as measured for example by the likelihood that the model would generate an observed sample) is a natural measure of the quality of the model.
-
-%The basic framework for model selection intimated in the section involves minimization of an error metric characteristics of the model -- for example the norm of the between the model's eigenvalues and the propagator's true eigenvalues, or the L2 norm of the eigenvectors ( I think frank worked with this in one paper). Unfortunately, these quantities are not computable from a given model $M = \{S, T\}$ and data set $D$. The only access we have to the true propagator is via sampling new data. Therefore, the only way to know that we have constructed a model that is consistent with the propagator is to test how well the model would predict the new data. 
-
-%The only available access to the information in the propgator is our sample $D$. For this reason, we instead emphasize the ability of the model to predict $D$.
-
-%On one hand, $M$ can be viewed as being fit _on_ $D$, but from another perspective $M$ is something that can _generate_ $D$. We thus can consider how predictive $M$ is.
-
-\begin{itemize}
-\item We always have finite data, and so this variational approach ignores another source of error due to the statistical error
-\item What we really want is a model that reproduces the dynamics due to the hamiltonian
-\item In practice, the transfer operator is inaccessible, and what you have is data and a model that attempts to describe the data.
-\item But the only way to access the true transfer operator is to sample from it and produce new data. Therefore, we should actually attempt to estimate a model that can best predict new data.
-\item This MSM has since been referred to as an object that takes in data, but in fact (as it is generative) we are parameterizing it to generate new data. 
-\item So if we build many MSMs, the ``best" model is the one that is most likely to have produced the newly observed data. 
-\item This means that we should construct a model such that it assigns a high probability to the new data. 
-\item This is precisely the idea of cross-validation or BIC/AIC (maybe we should define them here).
-\item The true data is a random variable (that we can sample), but in an MSM, the trajectory sampled is a random variable
-\end{itemize}
-
-\section{bayesian statistics}
-\begin{itemize}
-\item in the bayesian world, we would integrate over all possible models, but if we want a single model, then we should pick the most likely one
-\end{itemize}
-
-Given a Markov model parameterized at a lag time of $\tau$, we can propagate ensembles of trajectories via the transition probability matrix:
-$$\mathbf{p}_\tau^T = \mathbf{p}_0^T T(\tau)$$ where $\mathbf{p}_t$ is a probability distribution over states at time $t$ and $T(\tau)$ is a matrix with entries corresponding to the probability of transferring from one state to another at a time of $\tau$. As suggested by \citet{Swope2004Describing}, given a Markov model at a lag time of $\tau$, $T(\tau)$, we expect that a different model with a lag time of $n\tau$ should merely be the $n^\textnormal{th}$ power of $T(\tau)$:
-$$\mathbf{p}_{n\tau}^T = \mathbf{p}_0^T T(n\tau) = \mathbf{p}_0^T \left[T(\tau)\right]^n $$ As such, the eigenvalues and eigenvectors of models built at many lag times are related. Specifically, when building multiple models for the same data set, the eigenvectors should be invariant to changing lag time, while the eigenvalues change via the relation:
-$$\lambda(\tau)^n = \lambda(n \tau)$$ The largest, non-unit eigenvalues correspond to the slowest timescales in the data. It's often useful to compute the slowest implied timescales ($t_i$) via the relation:
-$$t_i = - \frac{\tau}{\log \lambda_i} $$ These implied timescales should be invariant with respect to the lag time and therefore provide a useful tool for testing the quality of an MSM. Specifically, many models are built at varying lag times, and one is selected by choosing the model whose timescales have converged.
-
-\section{Prior Work}
-%After diagonalization of the transition matrix, the relaxation of any initial probability distribution can be described by a superposition of exponential relaxation processes, with a characteristic time given by $-\frac{1}{\ln \lambda_i}$.
-MSM model selection has traditionally been performed by analyzing the self-consistency of the models with respect to changes in the Markov lag time. In practice, while this test has been useful for many \cite{Noe2009Constructing}, it has some flaws. In particular, it is generally observed that most models' timescales do not converge, but steadily increase, making it difficult to judge whether a particular model passes the test and encouraging the use of ever-more states. Additionally, it is difficult to compare models built on two state decompositions, as neither may have convergent timescales. Often, the choice is made to use the model whose timescales better match an experimental observable.
-
-Other evaluation strategies include a test based on comparison to a second-order Markov model \cite{Park2006Validation}. Additionally, Bayesian methods that involve marginalizing over all possible MSMs have been developed \cite{Bacallado2009Bayesian, *Bacallado2011Bayesian}. However, these methods are often prohibitively expensive on larger data sets. In contrast, \citet{Kellogg2012Evaluation} proposed a tractable method for comparing MSMs built with different state decompositions, based on a likelihood function for an MD trajectory given an MSM, discussed below.
+Introduction to MSMs via the propagator theory motivates the view of the parameterization problem as one of \emph{function estimation}. This perspective has a critical disadvantage: the natural error metric -- the difference between the estimated MSM and true propagator is intrinsically uncomputable. The only access to the true propagator is via samples from the Hamiltonian with MD. Therefore, a compelling alternative is to view the problem as one of \emph{prediction}. Since the MSM is a generative model for trajectories in $\Omega$, it is possible to sample ``pseudo-trajectories" directly from the MSM. If the MSM were perfect, these ``pseudo-trajectories" would be indistinguishable from trajectories generated by the true propagator. Thus, the probability assigned by the MSM, to samples from the true propagator is a measure of the MSM's accuracy. This argument is formalized by Bayes' rule, which establishes a proportionality between the probability of a model given data to the probability of the data given the model
+\begin{equation}
+\label{eq:bayes}
+P\Big(\{S, \mathbf{T}\} \;\Big|\; D\Big) = P\Big(D \;\Big|\; \{S, \mathbf{T}\}\Big) \frac{P(\{S, \mathbf{T}\})}{P(D)},
+\end{equation}
+where $P\Big(\{S, \mathbf{T}\} \;\Big|\; D\Big)$ is the posterior probability of an MSM, $P\Big(D \;\Big|\; \{S, \mathbf{T}\}\Big)$ is the \emph{likelihood} of the data given a model, $P(\{S, \mathbf{T}\})$ is the prior probability of an MSM before observing any data, and $P(D)$ is the probability of the data, a constant.
 
 \section{Likelihood of a Markov State Model}
 Bayes' rule provides a foundation for model selection, by establishing the proportionality of the probability of a model given the data to the probability of the data given the model. Without a strong prior, model selection is reduced to the search for the model that maximizes the likelihood of the data. 
-
-Thus we seek to formulate this likelihood function for Markov state models. With the kinetic model expressed as a set of pairwise state to state transition probabilities at a given lag time, the likelihood of an ensemble of trajectories after projection into the MSM state space is given simply by the product of the transition matrix elements along the observed trajectories. However, as we vary the number of states, it is not permissible to simply compare these likelihoods as part of an optimization of the state definitions. In doing so, the optimal model would always be the trivial one state model, whose computed likelihood is unity regardless of the data.
-
-The appropriate likelihood is instead a path action in phase space, on which the discrete states are merely an indicator function basis. With $s(\mathbf{x})$ as the function that maps a conformation in phase space ($\mathbf{x}$) to the index of a state in the discrete state space, and $\{\mathbf{x}_t\}_{t=1}^N$ an observed trajectory, the likelihood can be written as:
-
+With $\{\mathbf{x}_t\}_{t=1}^N$ an observed trajectory of length $N$, the likelihood can be written as:
 \begin{equation}
-\begin{split}
-P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
-\cdot \prod_{t=1}^{N} P(\mathbf{x}_t | s(\mathbf{x}_t)) \cdot d\mathbf{x}^N
+P\big(\{\mathbf{x}_t\}_{t=1}^N\;\big|\; \{S, T\}\big)d\mathbf{x}^N = \prod_{t=1}^{N-1} T_{\sigma(\mathbf{x}_t), \sigma(\mathbf{x}_{t+1})} \cdot \prod_{t=1}^{N} P(\mathbf{x}_t | \sigma(\mathbf{x}_t)) \cdot d\mathbf{x}^N,
 \label{eq:like}
-\end{split}
-\end{equation}
-
-With a discrete, non-overlapping state space, the likelihood of a sampled trajectory can be decomposed into a product of terms of two types: the state to state Markov transition probabilities, $T(s_i \rightarrow s_j) \equiv P(S_{t+1}=s_j | S_{t}=s_i)$, and so-called emission distributions of each state, $P(\mathbf{x} | s(\mathbf{x}))$, the conditional probability of observing a conformation at a given location in phase space given that the conformation, $\mathbf{x}$, is within a certain state, $s(\mathbf{x})$. As we are using  non-overlapping states, the conditional probability of observing a conformation, $\mathbf{x}$ from state $i$ is zero unless $\mathbf{x}$ is assigned to $i$. Mathematically, this means:
-$$ P(\mathbf{x} | i) = 0 \;\;\;\; \forall \mathbf{x} \textnormal{ s.t. } s(\mathbf{x}) \neq i$$
-
-This emission distribution can be modeled in multiple ways, each of which, in combination with a transition matrix, parametrizes a different statistical model. \citet{Kellogg2012Evaluation} used a discriminative model with:
-\begin{equation}
-P(\mathbf{x}_t | s(\mathbf{x}_t)) = \big| \{ \mathbf{x}_k : s(\mathbf{x}_k) = s(\mathbf{x}_t) \} \big|^{-1}
-\end{equation} where $| \cdot |$ denotes the cardinality of a set. This is a discriminative model, whose support is the training data set rather than phase space, which makes it unable to generalize and assign probability to new data. In certain circumstances, this is an undesirable property. For example, protocols that involve fitting and validating models on separate data sets (e.g. cross-validation) are impossible when the statistical model lacks the capacity to describe new data.
-
-Instead, we seek a generative model whose emission distributions are supported on phase space (i.e. standard distributions over $\mathbb{R}^{3N_{atoms}}$). We propose one possible emission distributions, $P(\mathbf{x} | s(\mathbf{x}))$: a uniform distribution over the (hyper)volume of each state, as shown in \cref{eq:like_vol}. 
-\begin{equation}
-\label{eq:like_vol}
-\begin{split}
-%P\left[\{\mathbf{x}_t\}_{t=1}^N\right] d\mathbf{x}^N = \prod_{t=1}^{N-1} T(s(\mathbf{x}_t) \rightarrow s(\mathbf{x}_{t+1})) \\
- P(\mathbf{x}_t | s(\mathbf{x}_t)) = \frac{1}{V_{s(\mathbf{x}_{t})}}
-\end{split}
 \end{equation} 
-This model has the advantage of appearing agnostic with respect to intra-state dynamics but is intractable in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation. 
-%For example, consider two Markov state models sharing the same transition matrix, $T$. In one model, the state emission distributions are highly peaked at specific locations in phase space, whereas in the other model the emission distributions are uniform over the volume of the states. If an observed trajectory does go through the first models' regions of high likelihood, it is appropriately termed a more likely model given the data.
+where $P(\mathbf{x}_t | \sigma(\mathbf{x}_t))$ is the probability of sampling a conformation $\mathbf{x}_t$ given that the process is in the state $\sigma(\mathbf{x}_t)$, referred to as the emission distribution of state $\sigma(\mathbf{x}_t)$. There is some flexibility in the choice of emission distribution, though \cref{eq:like} is valid only when the emission distributions satisfy
+\begin{equation}
+P(\mathbf{x} | i) = 0 \;\;\;\; \forall \; \mathbf{x} \textnormal{ s.t. } \sigma(\mathbf{x}) \neq i.
+\end{equation}
+Given the coarse-graining of $p(\mathbf{x})$ in \cref{eq:coarse-grain-p}, the most natural choice emission distributions are normalized indicator functions
+\begin{equation}
+P(\mathbf{x} \;|\; i) = \frac{1}{V_i} \mathbf{1}_{s_i}(\mathbf{x}).
+\end{equation}
+An alternative emission distribution was proposed by \citet{Kellogg2012Evaluation} Instead of having support on $\Omega$, this distribution is supported on the training set $\{\mathbf{x}_t\}_{t=1}^N$. It is given by
+\begin{equation}
+P(\mathbf{x} \;|\; i) = \big| \{ \mathbf{x}_k : \sigma(\mathbf{x}_k) = \sigma(\mathbf{x}) \} \big|^{-1} \sum_{t=1}^N \delta(\mathbf{x}-\mathbf{x}_t),
+\end{equation} where $| \cdot |$ denotes the cardinality of a set and $\delta(\cdot)$ is the Dirac delta function. As this is a discriminative model, it is unable to generalize and assign probability to new data. In certain circumstances, this is an undesirable property. For example, protocols that involve fitting and validating models on separate data sets (e.g. cross-validation) are impossible when the statistical model lacks the capacity to describe new data.
 
-%The simplest definition would be a uniform distribution since we are constructing an MSM that is agnostic to intra-state dynamics. When properly normalized, the uniform distribution takes a value of the reciprocal of the state's volume. This makes for an easy expression, however, volumes in high-dimensional states can be difficult to compute \ref{eq:like_vol}. For this reason, we can also choose other emission distributions that may be more tractable. In fact, \citet{Pelleg2000Xmeans} have used a gaussian emission distribution to define a likelihood to compare two k-means clusterings. The result of this emission distribution, is that the likelihood is proportional to the sum of square distances, which is precisely what is optimized in k-means clustering. If we think of k-centers as a poor man's version of k-means, then we can apply this same likelihood.
+\section{Statistical Model Selection}
+Likelihood maximization on the training data (i.e. the data used to fit the model) is insufficient for model selection when the number of parameters varies between proposed models, as more complex models generally exhibit higher empirical likelihoods, often at the cost of larger generalization errors due to over-fitting\cite{Liddle2007Information, Hastie01Elements}. Statistical learning theory provides a number of methods to overcome this problem. Conceptually, the most straightforward is a full Bayesian treatment in which all unknown model parameters are represented by probability distributions. The evidence for a $k$-state model is computed by formally integrating \cref{eq:bayes} over the model parameters and the evidence ratio, or Bayes factor\cite{Gelfand94Bayesian}, then provides a rigorous basis of model selection that appropriately punishes overly complex models as they become poorly constrained in parameter space. Unfortunately such approaches are impractical for problems of this size because of the need to integrate over all possible Markov models of a given size.
 
-\section{Cross Validation and the Bayes Information Criterion}
-Likelihood maximization is insufficient for model selection when the number of parameters varies between proposed models, as more complex models generally exhibit higher empirical likelihoods, often at the cost of larger generalization errors due to over-fitting\cite{Liddle2007Information, Hastie01Elements}. Statistical learning theory provides a number of alternative approaches for this problem. Conceptually, the most straightforward is a full Bayesian treatment in which all unknown model parameters are represented by probability distributions. The evidence for a model is computed by formally integrating over the model parameters and the evidence ratio, or Bayes factor\cite{Gelfand94Bayesian}, then provides a rigorous basis of model selection that appropriately punishes overly complex models as they become poorly constrained in parameter space. Unfortunately such approaches are intractable for problems of this size because of the need to integrate over all possible Markov models of a given size.
-
-Instead, we explore three alternative procedures for choosing the number of states in an MSM: cross validation, Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} and the Akaike information criterion (AIC)\cite{Akaike1974AIC}. Cross-validation attempts to directly measure the Markov model's generalization error. First, the model is parameterized by building both the state space and transition matrix on a subset of the available molecular dynamics trajectories, then the likelihood is evaluated on the left-out portion. This scheme can be repeated many times with different partitions of the data set. The AIC and BIC are augmented likelihood function approaches which do not require leaving out portions of the available data during fitting, and instead employ asymptotic approximations to the Bayesian evidence to directly penalize models with additional free parameters.
+Instead, we explore three alternative procedures for choosing the number of states in an MSM: cross validation, Schwarz's Bayesian information criterion (BIC)\cite{Schwartz78Estimating} and the Akaike information criterion (AIC)\cite{Akaike1974AIC}. Cross-validation attempts to directly measure the Markov model's generalization error. First, the model is parameterized by building both the state space and transition matrix on a subset of the available molecular dynamics trajectories, then the likelihood is evaluated on the left-out portion. This scheme can be repeated many times with different partitions of the data set. The AIC and BIC are augmented likelihood function approaches that do not require leaving out portions of the available data during fitting, and instead employ asymptotic approximations to the Bayesian evidence to directly penalize models with additional free parameters.
 \begin{equation}
 \label{eq:bic}
 \mathrm{BIC} \equiv -2\cdot \ln L + \left(\ln N \right)\cdot \kappa
@@ -188,28 +137,72 @@ Instead, we explore three alternative procedures for choosing the number of stat
 \mathrm{AIC} \equiv -2\cdot \ln L + \left(2\right) \cdot \kappa
 \end{equation} where $L$ is the likelihood, $\kappa$ is the number of free parameters, and $N$ is the number of data points, assumed to be independent and identically distributed. Model selection is performed by a minimization of the criterion.
 
+%\section{Prior Work}
+
+%Given a Markov model parameterized at a lag time of $\tau$, we can propagate ensembles of trajectories via the transition probability matrix:
+%$$\mathbf{p}_\tau^T = \mathbf{p}_0^T T(\tau)$$ where $\mathbf{p}_t$ is a probability distribution over states at time $t$ and $T(\tau)$ is a matrix with entries corresponding to the probability of transferring from one state to another at a time of $\tau$. As suggested by \citet{Swope2004Describing}, given a Markov model at a lag time of $\tau$, $T(\tau)$, we expect that a different model with a lag time of $n\tau$ should merely be the $n^\textnormal{th}$ power of $T(\tau)$:
+%$$\mathbf{p}_{n\tau}^T = \mathbf{p}_0^T T(n\tau) = \mathbf{p}_0^T \left[T(\tau)\right]^n $$ As such, the eigenvalues and eigenvectors of models built at many lag times are related. Specifically, when building multiple models for the same data set, the eigenvectors should be invariant to changing lag time, while the eigenvalues change via the relation:
+%$$\lambda(\tau)^n = \lambda(n \tau)$$ The largest, non-unit eigenvalues correspond to the slowest timescales in the data. It's often useful to compute the slowest implied timescales ($t_i$) via the relation:
+%$$t_i = - \frac{\tau}{\log \lambda_i} $$ These implied timescales should be invariant with respect to the lag time and therefore provide a useful tool for testing the quality of an MSM. Specifically, many models are built at varying lag times, and one is selected by choosing the model whose timescales have converged.
+
+%After diagonalization of the transition matrix, the relaxation of any initial probability distribution can be described by a superposition of exponential relaxation processes, with a characteristic time given by $-\frac{1}{\ln \lambda_i}$.
+%MSM model selection has traditionally been performed by analyzing the self-consistency of the models with respect to changes in the Markov lag time. In practice, while this test has been useful for many \cite{Noe2009Constructing}, it has some flaws. In particular, it is generally observed that most models' timescales do not converge, but steadily increase, making it difficult to judge whether a particular model passes the test and encouraging the use of ever-more states. Additionally, it is difficult to compare models built on two state decompositions, as neither may have convergent timescales. Often, the choice is made to use the model whose timescales better match an experimental observable.
+
+%Other evaluation strategies include a test based on comparison to a second-order Markov model \cite{Park2006Validation}. Additionally, Bayesian methods that involve marginalizing over all possible MSMs have been developed \cite{Bacallado2009Bayesian, *Bacallado2011Bayesian}. However, these methods are often prohibitively expensive on larger data sets. In contrast, \citet{Kellogg2012Evaluation} proposed a tractable method for comparing MSMs built with different state decompositions, based on a likelihood function for an MD trajectory given an MSM, discussed below.
+
 \section{Computational Methods}
+
+\subsection{Volume Estimation}
+The uniform distribution emission model presents a computational challenge: its use requires the calculation of the (hyper)volume of the MSM's states, which, when defined by clustering, are high-dimensional Voronoi cells. While trivial in two or three dimensions, this computational geometry task becomes challenging in high-dimensional settings. The computation of such volumes has occupied significant attention in recent years in the computational geometry literature, especially via randomized algorithms\cite{Kannan97, Simonovits03, Lovasz03}. We opt to approximate the volumes using Monte Carlo integration, which we find tractable for large systems only when the molecular dynamics data set is first projected into a suitable small vector space of up to perhaps ten dimensions.
+
+A further challenge is the description of the states that are at the edge of the MSM -- whose Voronoi cells extend to infinity in at least one direction. In these cases, the Voronoi cells are of unbounded volume. Instead we wish to truncate these states by bounding them by the convex hull of the data set. Because the convex hull of our simulation data sets are computationally inaccessible, we defined the accessible volume of $\Omega$ denoted $A$, to be the set of all points within a distance $R$ within a set of test points $Y$.
+
+\begin{algorithm}
+\caption{Monte Carlo Estimation of the State Volumes}
+\begin{algorithmic}[1]
+\Procedure{MC Volume Estimation}{$\sigma, A, M$}
+	\State $\mathbf{c} \gets [0, 0, \ldots, 0]$\Comment{$\mathbf{c}$ is a vector of length $k$}
+	\While{$\sum_{i} c_i \leq M$}
+		\State $\mathbf{x} \gets $ sample from axis-aligned hyper cube containing $A$
+		\If{$\mathbf{x} \in A$}
+			\State $c_{\sigma(\mathbf{x})} \gets c_{\sigma(\mathbf{x})} + 1$
+		\EndIf
+	\EndWhile
+	\State $\mathbf{v} \gets \mathbf{c} \cdot(\sum_{i=1}^k c_i)^{-1}$ \Comment{$\mathbf{v}$ contains the relative volumes of each state}
+	\State \textbf{return} $\mathbf{v}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm} \noindent The result of this scheme produces the volumes of each state relative to the volume of $A$. It's important, therefore, to use the same set $A$ when comparing multiple models.
+\subsection{Simulation Protocol}
 
 \begin{figure}
 \centering
 \includegraphics[width=3in]{figs_final/mull_ww.png}
-\caption{Systems studied in this work. (A) Langevin dynamics on the two dimensional M\"{u}ller potential \cite{Muller1980Reaction}. (b) 200 $\mu s$ of dynamics of the Fip35 WW domain\cite{Liu2008Experimental}, courtesy of D.E. Shaw research \cite{Shaw2010Atomic}.}
+\caption{Systems studied in this work. (A) Brownian dynamics on the two dimensional M\"{u}ller potential \cite{Muller1979Location}. (b) 200 $\mu s$ of dynamics of the Fip35 WW domain\cite{Liu2008Experimental}, courtesy of D.E. Shaw research \cite{Shaw2010Atomic}.}
 \label{fig:pics}
-\end{figure}
+\end{figure} 
 
-The uniform distribution emission model presents a computational challenge: its use requires the calculation of the (hyper)volume of the MSM's states, which, when defined by clustering, are high-dimensional Voronoi cells. While trivial in two or three dimensions, this computational geometry task becomes challenging in high-dimensional settings. The computation of such volumes has occupied significant attention in recent years in the computational geometry literature, especially via randomized algorithms\cite{Kannan97, Simonovits03, Lovasz03}. We opt to approximate the volumes using naive Monte Carlo rejection sampling, which we find tractable for large systems only when the molecular dynamics data set is first projected into a suitable small vector space of up to perhaps ten dimensions.
+Two systems were investigated using this likelihood scheme. The first was a simple two dimensional surface with three energy minima, called the M\"{u}ller potential. The dynamics are governed by
+$$
+\frac{d\mathbf{x}}{dt} = - \nabla V(\mathbf{x})\zeta + \sqrt{2kT\zeta} R(t),
+$$ where $\zeta = 10^{-3}$, $kT = 15$, $R(t)$ is a delta-correlated Gaussian process with zero mean, and $V(\mathbf{x})$ was defined as
+$$
+V(\mathbf{x}) =  \sum_{j=1}^4 A_j \cdot \exp\Big(a_j (x_1-X_j)^2+b_j(x_1-X_j)(x_2-Y_j)+c_j(x_2-Y_j)^2\Big),
+$$ where $a = (-1, -1, -6.5, 0.7)$; $b = (0, 0, 11, 0.6)$; $c = (-10, -10, -6.5, 0.7)$; $A = (-200, -100, -170, 15)$; $X = (1, 0, -0.5, -1)$; $Y = (0, 0.5, 1.5, 1)$ as suggested by \citet{Muller1979Location}. Using the Euler-Maruyama method and a time step of $0.1$, we produced two trajectories of length $10^6$ time steps.
 
-A further challenge is the description of the states that are at the edge of the MSM -- whose Voronoi cells extend to infinity in at least one direction. In these cases, the Voronoi cells are of unbounded volume. Instead we wish to truncate these states by bounding them by the convex hull of the data set. Because the convex hull of our simulation data sets are computationally inaccessible, we define the outer extent of our data sets to be the set of all trial points such that the nearest sampled conformation to the trial point is closer than a certain cutoff, $R$.
+The first trajectory was clustered using the $k$-centers clustering algorithm with the Euclidean distance. State volumes were computed for the uniform emission model using $M=10^5$ rounds of Monte Carlo integration defining the set $A$ using the cluster centers from the 50-state model as the test points $Y$ with a cutoff of $R=0.28$. The second trajectory was used as a test set. All MSMs were built using a lag time of 30 steps.
 
-Because the maximum likelihood transition matrix fit on a subset of the data assigns probability zero to unobserved transitions, we observe cross validation log likelihoods of negative infinity in all but the most data-rich regimes. For this reason, we find it essential to use a dense prior during transition matrix estimation. Using a prior ensures that all transitions have a nonzero (albeit small) probability. We used a Dirichlet prior with a pseudo-count of $\frac{1}{k}$ for each possible transition, where $k$ is the number of states in the model\cite{msmb2?, nina?, wherever this happens to be}. 
+Next, we reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{Shaw2010Atomic} (Amber ff99SB-ILDN force field,\cite{amber} TIP3P water model\cite{tip3p}). We projected the trajectories into a four dimensional space using time-structure based independent components analysis (tICA) \cite{Schwantes2013Improvements, Perez2013Identification} on the first trajectory. To calculate the tICs, each conformation was represented as a vector of distances between all pairs of residues separated by at least three amino acids. The distance $d(A, B)$ between residues $A$ and $B$ was determined as follows. Let $\{a_i\}_{i=1}^{n_a}$ and $\{b_i\}_{i=1}^{n_b}$ be the cartesian coordinates of the heavy (non-hydrogen) atoms in $A$ and $B$. Then we define
+$$
+d(A,B) \equiv \min_{i, j} ||a_i - b_j||_2,
+$$ where $|| \cdot ||_2$ denotes the $\ell_2$ norm. The tICs were computed using a correlation lag time of 200 ns. We also performed Principal Components Analysis (PCA) on the same residue-residue distance representation and built MSMs using the top three PCs. In each projection, $k$-centers was used with the Euclidean distance metric.
+
+For the tICA MSMs, the cluster centers from the 100 state model were used as the test points $Y$ to define $A$ with a cutoff of $R=0.81$. In the PCA MSMs, the cluster centers from the 500 state model were used as the test points with a cutoff of $R=2.0$. In each case, $M=10^6$ rounds of Monte Carlo integration were performed to compute the state volumes.
+
+For all models, a maximum likelihood estimator for reversible transition matrices at a given lag time, with a pseudocount of $1 / k$ was used to compute $\mathbf{T}$. The pseudocount ensures that all transitions are assigned nonzero probability, which is especially important for evaluating data that was not used to train the model, as often new transitions will be observed. 
 
 \section{Results and Discussion}
 \subsection{M\"{u}ller Potential}
-The M\"{u}ller potential, is a simple two-dimensional surface with three energy minima. We simulated two trajectories with $10^6$ steps of Langevin dynamics on the M\"{u}ller potential\cite{Muller1980Reaction}. Simulations were performed with a timestep $t=0.1$, friction coefficient of $\gamma=10^3$, and $kT=15$. 
-
-The first trajectory was clustered using the $k$-centers clustering algorithm, and state volumes were computed for the uniform emission model using $10^5$ rounds of Monte Carlo rejection sampling with a cutoff of $R=0.28$ from the 50 state model's centroids. (To give a sense of scale, the x-axis of the M\"{u}ller potential shown in \cref{fig:pics} is 4 units across). The second trajectory was used as a test set. All MSMs were built using a lag time of 30 steps.
-
-The volumes did not change drastically upon doing ten times more Monte Carlo rejection sampling, and the likelihood remained essentially constant, which indicates that the use of approximate volumes is sufficient to obtain robust estimates of the likelihood. 
 
 \begin{figure}[h]
 \centering
@@ -224,8 +217,13 @@ The AIC and BIC penalize the larger state models much more than the test set log
 
 \subsection{Fip35 WW Domain}
 
-We reanalyzed two ultra-long 100 $\mu s$ molecular dynamics trajectories of the Fip35 WW domain\cite{Liu2008Experimental}, provided courtesy of D.E. Shaw Research \cite{Shaw2010Atomic}. Because the likelihood calculations involving the uniform distribution emission model have exponential complexity in the dimensionality of the state space we first preprocess the trajectories with time-structure based independent components analysis (tICA) \cite{Schwantes2013Improvements, Perez2013Identification}, extracting only the four slowest uncorrelated linear combinations of residue-residue distances. All MSMs were built using a lag time of 50 ns.
 
+
+
+ All MSMs were built using a lag time of 50 ns.
+
+
+Because the likelihood calculations involving the uniform distribution emission model have exponential complexity in the dimensionality of the state space we first preprocess the trajectories with a dimensionality reduction technique.
 \begin{figure}
 \centering
 \includegraphics[width=3in]{figs_final/ww_likes.png}
