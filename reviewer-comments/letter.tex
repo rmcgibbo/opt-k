@@ -43,7 +43,7 @@ We agree with the reviewer, as our contribution focuses only on picking the numb
 ``choosing models whose relaxation timescales have converged''  Give definition for ``relaxation timescales''.
 \end{quote}
 
-The reviewer is correct. We meant that the timescales will remain constant, but this means that the eigenvalues do change. We've added a much more detailed discussion of the background on MSMs including a discussion of the propagator. This text can be found in the section titled ``Background''.
+The reviewer is correct. We meant that the timescales will remain constant, but this means that the eigenvalues do change. We've added a much more detailed discussion of the background on MSMs including a discussion of the propagator. This text can be found in the section titled \emph{Theory.}
 
 \separate
 \begin{quote}
@@ -114,12 +114,12 @@ This is certainly one possibility, and is desirable because of its physical moti
 ``Unfortunately such approaches are intractable for problems of the size encountered in biomolecular simulations because of the need to integrate over all possible Markov models with a given number of parameters.''  Is this really intractable?  That's a very strong claim.  Perhaps it is just difficult or complex, since no evidence of intractability is presented?
 \end{quote}
 
-In order to compute the Bayes factor for selecting the number of states, we would need to integrate over the space of all crisp state decompositions $S$ with $|S|=k$ as well as the simplex of $k \times k$ reversible stochastic matrices. Although the second is possible analytically using the results of Diaconis and Rolles (2006), we're not aware of any practical methods for the former. To avoid confusion, we've replaced the word ``intractable'' with ``impractical''.
+In order to compute the Bayes factor for selecting the number of states, we would need to integrate over the space of all crisp state decompositions $S$ with $|S|=k$ as well as the simplex of $k \times k$ reversible stochastic matrices. Although the second is possible analytically using the results of Diaconis and Rolles (2006), we're not aware of any practical methods for the former. To avoid confusion, we've replaced the word ``intractable'' with ``impractical.''
 
 
 \separate
 \begin{quote}
-"N is the number of data points, assumed to be independent and identically distributed"  How reasonable is this assumption for molecular simulation data?  How do you even quantify the number of "iid normally distributed" data points in a molecular simulation?
+``N is the number of data points, assumed to be independent and identically distributed"  How reasonable is this assumption for molecular simulation data?  How do you even quantify the number of "iid normally distributed" data points in a molecular simulation?
 \end{quote}
 
 This is a subtle point, but is worth discussing. Since we are parameterizing a transition matrix, we choose the number of data points to be the number of transitions used to calculate the transition probabilities. However, as we are using the sliding window approach for counting transitions, we are in fact over-counting the number of identical transitions and so the BIC score is likely under-penalizing the models. This is a somewhat unanswered question in the field, however it has been discussed previously \cite{noe_sliding_window}. \hl{Do we want to add this to the main text?}.
@@ -129,19 +129,18 @@ This is a subtle point, but is worth discussing. Since we are parameterizing a t
 ``For cross validation, we find it essential to use a prior...''  Give complete equation for log likelihood.  How do you initialize and sample posterior?  Or maximize likelihood?
 \end{quote}
 
-We are being very unsophisticated in our use of the likelihood as we are not actually optimizing this likelihood to build our models. We are actually just using the likelihood to evaluate several models that are parameterized using the approach discussed in \cite{Beauchamp_msmb2}. \hl{Add this to the text, because the confusion is coming from the use of the word ``prior." We are not introducing a prior to the likelihood function, but merely using the prior when calculating the MAP for each model.}
+We are being very unsophisticated in our use of the likelihood as we are not actually optimizing this likelihood to build our models. We are simply using the likelihood to evaluate several models that are parameterized using the approach discussed in \cite{Beauchamp_msmb2}. The prior we mentioned in the original text was a prior used in the maximum likelihood estimator for a transition probability matrix given a state decomposition. 
 
 \separate
 \begin{quote}
 ``We simulated two trajectories with ... Langevin dynamics...''  Which langevin integration scheme was used!  How were the initial conditions selected?
-\end{quote}
-\hl{Need to look this up. I just used robert's code though.}
+\end{quote} 
 
-\separate
 \begin{quote}
 ``The first trajectory was clustered using the k-centers clustering algorithm...'' Cite.  What parameters were used for clustering?
 \end{quote}
-\hl{Now we're getting really nit-picky, but fine.}
+
+We've expanded our discussion of the simulation methods as well as the parameters used in MSM construction to address these and other issues. The new subsection, entitled \emph{Simulation and MSM Construction} can be found in the \emph{Methods} section. \hl{need to add the initial points}
 
 \separate
 \begin{quote}
@@ -162,86 +161,90 @@ We've clarified this to read:
 according to the BIC, AIC, and test log-likelihood
 \end{quote}
 
+\separate
 \begin{quote}
 Fig. 2: This figure is way too small.  What is ``score''?  Is this a log likelihood?  Is lower or higher score representative of lower or higher likelihood?  The numbers/units of likelihood are actually meaningful, and should be shown.  What is the difference between "volume" and "Gaussian"?
 \end{quote}
-\hl{I disagree with this comment. The absolute likelihoods are basically meaningless, while the relative differences are important. I think adding units would be distracting.} 
+All three figures have been reworked and are bigger. The y-axis label has been changed to "Selection Criterion." The absolute scale of these scores is not actually all that important, however it's the relative differences that encode which model is to be chosen. \hl{We might want to add more to the caption indicating that we are plotting -2logL...}
 
 \separate
 \begin{quote}
 Fig. 2 caption: ``form the boundaries of the optimal window''  Why is this region the optimal window?  It looks like the optimal BIC window is 100-200.  And why not just pick THE single optimal number of states?  Why do you need a window that contains highly nonoptimal models?
 \end{quote}
 
-We are not attempting to provide the ``best" model given the data, as there are many statistical tests for doing this. The window illustrated in these figures represents some reasonable range of models, and is a useful visualization of the differences in the three tests. In practice, however, one would choose one of the three and then pick the best model given that test. \hl{this was only mentioned in the captions of the figures, so I'll correct it when I change the figures.}
+We are not attempting to provide the ``best" model given the data, as there are many statistical tests for doing this. The window illustrated in these figures represents some reasonable range of models, and is a useful visualization of the differences in the three tests. In practice, however, one would choose one of the three and then pick the best model given that test. 
 
 \begin{quote}
 ``The AIC and BIC penalize the larger state models much more than the test set log-likelihood...''  Why is this discrepancy so large?  Doesn't this suggest AIC/BIC are unsuitable if they are not representative of the actual out-of-sample performance on the test set?
 \end{quote}
 
-It's quite possible that the AIC and BIC are over-penalizing the likelihood. Given this, we would always suggest that one uses the test log-likelihood approach when possible. However, the ``best" models according to the AIC and BIC were close to the best model from the test log-likelihood, so they may still be useful when it is impossible to leave out any data during the parameterization step. We are by no means advocating that either the AIC or BIC are perfect approximations to the out-of-sample performance. \hl{Add a sentence saying this in the main text.}
+It's quite possible that the AIC and BIC are over-penalizing the likelihood. Given this, we would always suggest that one uses the test log-likelihood approach when possible. However, the ``best" models according to the AIC and BIC were close to the best model from the test log-likelihood, so they may still be useful when it is impossible to leave out any data during the parameterization step. We are by no means advocating that either the AIC or BIC are perfect approximations to the out-of-sample performance. 
+
+Additionally, it's worth noting that the AIC applied to the tICA MSMs for WW domain does qualitatively agree with the test-set log likelihood. 
 
 \separate
 \begin{quote}
 ``causes the transition matrix to suffer''  Clarify?
 \end{quote}
 
-We should not anthropomorphize our mathematical expressions! We've corrected this to read more clearly:
-\begin{quote}
-The decrease in the training set log-likelihood can be explained by a trade-off inherent in Eq. (1), where adding more states leads to an increase in the emission distribution term but causes the transition matrix term to decrease significantly more.
-\end{quote}
+We should not anthropomorphize our mathematical expressions! This original text has been removed, though the section entitled \emph{Bias-Variance Dilemma} discusses the tradeoff we were referring to in the original draft.
 
 \separate
 \begin{quote}
 For Mueller potential with Gaussian likelihood: Would be useful to show log-likelihood as a function of number of states so we can see how much the model prefers 5 states.
 \end{quote}
-\hl{I originally had this but you didn't like my graph. We could add it back or ignore this since it's moved to the appendix anyway}
+
+We've removed the Gaussian likelihood results.
 
 \separate
 \begin{quote}
 Fig. 3: "Since k-means optimizes an objective function that is related to the emission probability" What is this objective function?  As I understand it, k-means simply minimizes the sum of intracluster variances, which has nothing to do with your choice of emission probability being uniform or Gaussian or otherwise. Or do you mean you optimize the log-likelihood form of Eq 1 using a voronoi decomposition based on generators that are optimized for each number of states?  Also: "The likelihood decreases as new states are added..."  Which likelihoods are printed in the figure panels?  Test set, uniform, or Gaussian emission probabilities?
 \end{quote}
 
-The k-means clustering method minimizes the average mean squared distance from each data point to its cluster's mean. This is precisely the same as the $\hat{\sigma}^2$ term in Eq. (8). When you write out the entire log-likelihood of the training dataset, there ends up being a term proportional to $\log \hat{\sigma}$. This is what we meant by the k-means clustering optimizing the likelihood function (and is precisely why Pelleg and Moore selected the probability that they did). \hl{Add clarification in figure to indicate that these are training set likelihoods.}
+The k-means clustering method minimizes the average mean squared distance from each data point to its cluster's mean. This is precisely the same as the $\hat{\sigma}^2$ term in the original equation. One can show that the resulting log-likelihood (evaluated on the data set) includes a term proportional to $\log \hat{\sigma}$. This is what we meant by the k-means clustering optimizing the likelihood function (and is precisely why Pelleg and Moore selected the probability that they did). 
+
+This discussion, however, has been removed, since it only applies to the Gaussian likelihood.
 
 \separate
 \begin{quote}
 ``...AIC is comparable to the test set log-likelihood...The BIC penalizes complexity more strongly..." Why the huge difference between the AIC and BIC?
 \end{quote}
 
-The difference just comes from the difference between the way both are defined. \hl{I want to brush this off as ``we're not advocating one or the other, but merely suggesting they may be useful in cases where cross-validation is not possible" but I'm not sure of the best wording.}
+The difference just comes from the difference between the way both are defined. The BIC penalizes the number of parameters more strongly. We've added a discussion of where the BIC and AIC come from. It's important to note that we are not attempting to advocate the use of a specific criterion, but are more interested in convincing the reader to use a statistical model selection criterion. The gold standard, of course is a cross-validation approach. Since this is not practical for most applications, we also wanted to include other selection criteria that are easier to calculate. Given our results, we would suggest the use of the AIC, but it's always important to know where these criteria come from and what assumptions are implicitly made when using one.
 
 \separate
 \begin{quote}
 Fig. 4: Too small.  Missing figure title, like "Comparison of likelihood models for Fip35 WW domain trajectory data".  "Test set log-likelihoods are omitted in C as the dense matrix algebra is intractable for $k > 10^3$".  Intractable?  Really?  But this is just summing log $T_{ij}$ over N elements, isn't it?
 \end{quote}
-We really shouldn't use this word here, as it's not intractable, but it is difficult, as you have to fit the transition matrix with $k^2$ (nonzero) terms. Our software leverages sparse matrices, so it is difficult for us to actually parameterize large transition matrices that are not sparse.
+
+We did not intend to use the word ``intractable" in the mathematical sense. We've changed this word to ``impractical" to avoid confusion.
 
 \separate
 \begin{quote}
 ``For tICA, this window is consistent with the convergence of the relaxation timescales"  So....looking at convergence of the relaxation timescales is just as good as the new proposed likelihood method?
 \end{quote}
 
-Yes it is. For well-sampled datasets built using the state of the art methods we can still use implied timecales, however, there are many times that the timescales are not as clean and easy to interpret. We've added a figure for models built with PCA instead of tICA on the WW dataset to illustrate how the implied timescales are not ``optimizable" in non-ideal cases. \hl{still need to make this figure.}
+Yes it is. For well-sampled datasets built using the state of the art methods we can still use implied timecales, however, there are many times that the timescales are not as clean and easy to interpret. We've added additional results for models built with PCA instead of tICA on the WW dataset to illustrate how the implied timescales are not necessarily  in non-ideal cases. 
 
 \separate
 \begin{quote}
 ``Lane et al. proposed...whereas Kellogg et al...Consistent with this spread, we find the optimal number of states to be highly dependent on the space in which the data is clustered."  Were these two examples using the same metric of model quality and criteria for selecting the number of states?
 \end{quote}
-Lane et al. used an implied timescale approach with the RMSD metric, while Kellog et al. (discussed in the section ``Prior Work" \hl{right?}) used a likelihood model with a discriminative emission distribution. This line has been re-worked since we've moved the Gaussian emission model to the appendix.
+
+This discussion is no longer in this revision since we've removed the Gaussian emission model to the appendix. However, in case the reviewer was curious, Lane et al. selected the number of states by insisting that each point was within 4.5 \AA of the cluster center. Kellogg et al. used a likelihood (Eq. (11) in the revision) based on a discriminative probability model.
 
 \separate
 \begin{quote}
 ``These results indicate why likelihood-based model selection is superior to approaches relying only on the timescale convergence.''  How?  I don't see clear evidence of this.  Which likelihood model is superior specifically?  How is this superior to choosing the smallest number of states for which the timescales become flat (assuming that such a thing exists)?  The only evidence presented here has judged success by examining concordance among AIC/BIC/leave-some-out cross validation and the timescale metric.  In Fig 4, BIC and AIC disagree, while AIC tracks (but does not quantitatively agree with) the test set method.  The agreement with the timescale convergence is shown as evidence of correctness.  But it seems like SOMETHING is missing to show that this approach (or, more properly, ONE of these likelihood approaches) is superior to simply checking when the timescales go flat.  A much more convincing test would be to show that these methods allow one to achieve smaller model error (eg in reproducing some quantitative features of the dynamics---maybe even the timescales?) for some smaller quantity of data when compared with a ``gold standard'' enormous dataset.  The behavior of the optimal number of states as a function of the quantity of data would also be of great interest.
 \end{quote}
 
-\hl{This is another important note that we need to answer carefully. The idea is that in ideal cases, our methods don't disagree with the timescale test drastically, but they are optimizable, which is in itself a significant advantage. This is particularly useful when the timescales simply do not converge, and cannot be quantitatively used to select a model. Secondly, the model that the statistical test selects may not be the model that best represents the protein of interest, however it does represent our best estimate of the system given how much data we have. Cross-validation is a rigorous way to compare models based on newly observed data, and so our test log-likelihood serves as a way to see that adding new states may increase the timescales, but in fact decreases the ``quality" of the model.}
-
-\separate
 \begin{quote}
-``These results take a step toward fully automating the MSM construction process...by providing a quantitative method for selecting the most suitable complex model.''  Which method in particular is recommended?  The Gaussian method?  AIC or BIC?  I'm still confused about what the actual, concrete demonstration of superiority is and which method the authors suggest should be used.
+``These results take a step toward fully automating the MSM construction process...by providing a quantitative method for selecting the most suitably complex model.''  Which method in particular is recommended?  The Gaussian method?  AIC or BIC?  I'm still confused about what the actual, concrete demonstration of superiority is and which method the authors suggest should be used.
 \end{quote}
+\hl{how's this?}
+The point that we are attempting make is to say that in many cases the implied timescale tests, which are motivated by arguments made in the limit of infinite data, are not enough for building MSMs on real data sets. It is frequently observed that the timescales are not well-behaved when we have limited data. Therefore, model selection based on timescale convergence is not able to answer the question ``given the data that I have, what is the best MSM I can build?" The point is that we need to take into account the statistical error in order to answer this question. The likelihood-based criteria are a few examples of such methods, but they may not be the gold standard for model selection. We are merely proposing that a shift in approach is needed to attempt to build models on systems that are increasingly large and that study increasingly slow timescales.
 
-The advantage is precisely that this framework is {\it optimizable}. The statistical tools we've suggested match the Chapman-Kolmogorov when the dataset is ``well-behaved" (i.e. when we have a lot of data and are using tICA). However, there are many cases where the timescales do not converge at all and so the Chapman-Kolmogorov tests fail. We've illustrated this with a simple example (\hl{See section ``PCA on WW")}, but in fact there are many larger simulations that give rise to wildly miss-behaving implied timescales.
+The statistical tools we've suggested match the timescale tests when the dataset is ``well-behaved" (i.e. when we have a lot of data and are using tICA). However, there are many cases where the timescales do not converge at all and so the timescale tests fail to pick a reasonable MSM. We've illustrated this with a simple example (see Fig. (4)).
 
 \separate
 \begin{quote}
@@ -251,48 +254,45 @@ Abstract: ``in regimes in which these techniques encourage over-fitting''  It is
 This is a good point, and we've rephrased to say:
 \begin{quote}
 Application of techniques that consider both systematic bias and statistical error on two 100$\mu s$ molecular dynamics trajectories of the Fip35 WW domain shows agreement with existing techniques based on self-consistency of the model's relaxation timescales, with more suitable results in regimes in which those timescale-based techniques encourage over-fitting.
-\end{quote} \hl{this sentence feels a bit long...}
-
+\end{quote} 
 \separate
 \begin{quote}
 Two key quantities which define the MSM are thus the state definitions, an indicator function basis over phase space..."  There is a substantial quantity of literature on the use of basis functions that are not indicator functions (i.e. "fuzzy" rather than "crisp" partitionings) that should be mentioned.  See, for example, the work of Marcus Weber and Susanna Roeblitz (nee Kube).
 \end{quote}
 
-\hl{We should add a section discussing this as well as the future of directly optimizing the likelihood in the form of an HMM or other type of moel}
+We've added a comment to the \emph{Likelihood of a Markov State Model} section, discussing ``fuzzy" clustering. 
 
 \separate
 \begin{quote}
 The model has the training data set as its support rather than phase space, which makes it unable to generalize and assign probability to new data."  It may also be worth noting that this is not a generative model, since the next paragraph states that a generative model is desired.
 \end{quote}
 
-This is precisely what we are drawing attention to, and we've added to this section to explicitly say this is a discriminative model.
+This is precisely what we are drawing attention to, and we've added to this section (\emph{Likelihood of a Markov State Model}) to explicitly say this is a discriminative model.
 
 \begin{quote}
 ``but is intractable in high dimensions when the states are defined by general polytopes, such as those produced by a data-driven Voronoi tessellation''  Be clear that *exact* volume computation is intractable in very high dimension due to the complexity of all known algorithms.  Monte Carlo schemes (such as the one used here, or methods such as [http://www.cs.elte.hu/~lovasz/vol4-focs-tr.pdf]) allow the approximation of this volume.  However, it's also worth noting that the Gaussian model you propose in Eq. 4 is ALSO INTRACTABLE for EXACTLY THE SAME REASON, since you do not compute the true normalizing constant for essentially identical reasons of computational tractability in high dimension.  As such, phrases such as "A more tractable alternative is a Gaussian emission model.." are entirely disingenuous and misleading.
 \end{quote}
 
-The reviewer is exactly right. For these reasons (and others) we've chosen to discuss just the volume-based emission model in the main text. This is really what we'd like to focus on.
+The reviewer is exactly right. For these reasons (and others) we've chosen to discuss only the volume-based emission model in this revision. 
 
 \begin{quote}
 ``All MSMs were built using a lag time of 50ns''  Why 50 ns?
 \end{quote}
 
-This was the same lag time that was used in Beauchamp et al.\cite{Beauchamp_shaw_paper}. In this scheme, the lag time must be specified before selecting the models, and so we picked a number that had been successfully used in the past. It's worth noting, however, that our scheme does not provide a framework for the selection of the lag time.
+This was the same lag time that was used in Beauchamp et al.\cite{Beauchamp_shaw_paper}. This has also been specified in the methods section. In this scheme, the lag time must be specified before selecting the models, and so we picked a number that had been successfully used in the past. It's worth noting, however, that our scheme does not provide a framework for the selection of the lag time.
 \separate
 \begin{quote}
 ``identify the simulations folding process''  Something isn't quite right with this phrase.  What is being referred to?
 \end{quote}
 
-This sentence was poorly worded, but we've reworked it and copied the new version below:
-\begin{quote}
-While only using 200-600 states, Markov models constructed using tICA were still able to recapitulate the folding timescale as well as the faster processes identified by McGibbon and Pande.
-\end{quote}
+This sentence was poorly worded, but we've reworked this section, and so this should be clearer. (See emph{Results and Discussion: WW Domain}.)
 
+\separate
 \begin{quote}
 ``the relaxation timescales can continually increase with the number of states used''  Even in the limit of an infinite quantity of data, the eigenvalue error bound theorems from Schuette et al. note that this behavior is precisely what we should expect, since the approximation error decreases as the eigenfunctions are better approximated via more states.  However, the statistical error grows, though this is not quantified or plotted here.
 \end{quote}
 
-The reviewer is exactly right, and this is the point we're trying to drive home. It would be nice to compute the statistical error, but it is a difficult thing to calculate. \hl{This is in the minor complaints section so I don't know if we really need anything more than this}
+The reviewer is exactly right, and this is the point we're trying to drive home. It would be nice to compute the statistical error, but it is a difficult thing to calculate, since it depends on both the estimate of the transition probabilities given the state space, as well as error due to where the states are located. However, the likelihood approach will take all sources of error into account. 
 
 Reviewer 2:
 
@@ -304,7 +304,7 @@ The authors present an alternative approach for choosing the Markov time for Mar
 Line 34: Did you mean sacrificing ``accuracy'' instead of ``complexity''?
 \end{quote}
 
-We do mean complexity here, however the two words go hand in hand. In this case, we're talking about an MSM built either with thousands vs. tens of states. The simpler model therefore cannot describe transitions between two states from the complicated model that are lumped together in the simple model. In this sense, the simpler model is less accurate. However, this may not matter, if what you really care about is a large global transition between ensembles of small states. In this sense, the simpler model does not lose any accuracy. \hl{I hate how I worded this.}
+We do mean complexity here, however the two words go hand in hand. The complexity of a model can be generally thought of as how capable the model is at handling arbitrarily complicated data. As one increases the complexity of a model, it is more able to model the training set more accurately.
 
 \separate
 \begin{quote}
@@ -318,7 +318,7 @@ Can the authors comment on whether k-means or k-centers is preferable based on t
 The authors have access to many other data sets from their own lab and the Shaw group.  Would it be possible to show results for other systems (maybe one larger system and one system with more disorder)?  I think this would help to establish the generality of their results.
 \end{quote}
 
-This is a very good idea and something we're interested in doing. However, due to the complexity of the volume calculation it's simply not feasible. We hope that our work serves as a stepping stone to new methods that optimize a likelihood supported in phase space, but admit it may not be the one discussed here. 
+This is a very good idea and something we're interested in doing. However, due to the complexity of the volume calculation it is a difficult task. We hope that our work serves as a stepping stone to new methods that optimize a likelihood supported in phase space, but admit it may not be the one discussed here. 
 
 
 Reviewer 3:
@@ -328,7 +328,7 @@ Optimal Parameter Selection in Markov State Models for Biomolecular Conformation
 \end{quote}
 
 \begin{quote}
-I find the title ‚ÄúOptimal Parameter Selection in Markov State Models...‚Äù inappropriate: It suggests that the ``Parameter selection in MSMs'' is a well-defined problem, and that the solution approach here would be optimal, i.e. not further improvable. Neither is true. I suggest to pick a title that is specific to the content of the paper, e.g. ``Likelihood-approach for selecting the number of states / choosing between discretizations in MSMs''
+I find the title ‚Optimal Parameter Selection in Markov State Models...‚ inappropriate: It suggests that the ``Parameter selection in MSMs'' is a well-defined problem, and that the solution approach here would be optimal, i.e. not further improvable. Neither is true. I suggest to pick a title that is specific to the content of the paper, e.g. ``Likelihood-approach for selecting the number of states / choosing between discretizations in MSMs''
 \end{quote}
 
 \begin{quote}
