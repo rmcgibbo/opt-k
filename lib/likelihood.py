@@ -60,6 +60,9 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
     counts = counts.tocsr()
     tProb = tProb.tocsr()
 
+    pi = msm_analysis.get_eigenvectors(tProb, k=1)
+    pi = pi.flatten() / pi.sum()
+
     ij = counts.nonzero()
 
     state_counts = np.array(counts.sum(axis=1)).flatten()
@@ -78,6 +81,7 @@ def get_log_likelihood(tProb, trajs, volumes, lagtime=1, separate=False,
     t_like = np.sum(nonzero_counts[good_transitions] * np.log(nonzero_tprobs[good_transitions]))
     pct_lost = (nonzero_counts.sum() - nonzero_counts[good_transitions].sum()) / nonzero_counts.sum() * 100.
     print "ignoring %.2f %% of counts that have zero probability according to the model"  % pct_lost
+    t_like += np.log(pi[trajs[0]])
 
     if not kellogg:
         v_like = - np.sum(state_counts * np.log(volumes))
