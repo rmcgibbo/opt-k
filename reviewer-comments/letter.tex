@@ -2,7 +2,7 @@
 \usepackage{color,soul}
 \usepackage{hyperref}
 \usepackage{fullpage}
-\usepackage{cleveref}
+%\usepackage{cleveref}
 
 \address{Clark Center S295 \\ Stanford University \\ Stanford, CA, 94305}
 \signature{Robert T. McGibbon, Christian R. Schwantes, Vijay S. Pande}
@@ -31,7 +31,8 @@ Most critically, the manuscript does not clearly explain the described work, ful
 The title ``Optimal parameter selection...'' does not reflect the work contained in the paper, which focuses only on the selection of the number of states.  Should the authors wish to keep the general title, more work on selecting other kinds of parameters should be included; otherwise, the title should be amended to something like ``Optimal selection of the number of states... using a likelihood approach...''
 \end{quote}
 
-This is a fair point, as we focus only on picking the number of states. In fact, we've changed the title to reflect this issue as well as the fact that we're not attempting to argue that our selection is truly ``optimal," but merely suggesting to use a method that is ``{\it optimizable}." \hl{reference the title.}
+We agree with the reviewer, as our contribution focuses only on picking the number of states. To address this comment, we've changed the title to reflect this fact. Furthermore, we don't wish to make the suggestion that our model selection criteria are themselves optimal. They are merely one set of statistical tools from among many. For this reason, we've changed the title to ``Statistical Model Selection for Markov Models of Biomolecular Dynamics''.
+
 
 \separate
 \begin{quote}
@@ -42,9 +43,8 @@ This is a fair point, as we focus only on picking the number of states. In fact,
 ``choosing models whose relaxation timescales have converged''  Give definition for ``relaxation timescales''.
 \end{quote}
 
-The reviewer is exactly correct. We meant that the timescales will remain constant, but this means that the eigenvalues do change. We've corrected that sentence and also added a more detailed discussion of the transition probability matrix. The text can be found at the beginning of the section ``Prior Work."
+The reviewer is correct. We meant that the timescales will remain constant, but this means that the eigenvalues do change. We've added a much more detailed discussion of the background on MSMs including a discussion of the propagator. This text can be found in the section titled ``Background''.
 
-\hl{add the text here too}
 \separate
 \begin{quote}
 ``With s(x) as the function mapping conformations into the indicator function basis set" Unclear: do you mean s(x) is the integer index of the basis function that is nonzero (has support) at x?  Please be precise.  The lack of precision in this manuscript substantially hampers readability and comprehension.
@@ -53,25 +53,27 @@ The reviewer is exactly correct. We meant that the timescales will remain consta
 We were too casual with our notation, but had meant that $s(\cdot)$ maps a conformation in phase space to an integer corresponding to the index of the state in the Markov model. This has been reworded to read:
 
 \begin{quote}
-With $s(\mathbf{x})$ as the function that maps a conformation in phase space ($\mathbf{x}$) to the index of a state in the discrete state space
+A $k$-state Markov model is defined on a discrete set of states, $S = \{s_i\}_{i=1}^k$, where $s_i \subseteq \Omega$ and $\bigcup_{i=1}^k s_i = \Omega$. Furthermore, $s_i \cap s_j = \emptyset$ for all $i \neq j$. In words, every point in $\Omega$ is assigned to one (and only one) state in the MSM. Let $\sigma(\mathbf{x})$ be the function that maps a point $\mathbf{x} \in \Omega$ to the index $i$ of the state in $S$ such that $x \in s_i$.
 \end{quote}
+
 \separate
+
 \begin{quote}
 Eq. 1: This neglects a term for the initial conditions $x_0$.  Eq. 1 actually refers to the conditional probability $P[{x_t}|x_0]$.  Is this the quantity you intend to work with, rather than $P[{x_t}]$?  If so, why?
 \end{quote}
 
-This is most definitely true, but is not incredibly important. The reviewer is correct that technically we should include the probability of $x_0$ in the likelihood, however, when evaluating the relative likelihoods of models built on the same data, this term cancels out as it shows up in each model. Therefore, optimizing either function will arrive at the same result. \hl{We can add to the text if we think we need to, but this is really a nit-picky comment in my opinion.}
+We have changed this, such that we work directly $P\big(\{\mathbf{x}_t\}_{t=1}^N\;\big|\; \{S, \mathbf{T}\}\big)d\mathbf{x}^N$ as opposed to the conditional distribution in our work. We do not, however, fit a separate starting probability distribution. Because our goal is to build models for equilibrium dynamics, we choose $P\big(\mathbf{x}_0 | \{S, T\}\big) = \pi_{\sigma(\mathbf{x}_0)} \; P(\mathbf{x}_0 | \sigma(\mathbf{x}_0))$ where $\pi$ the stationary distribution of $\mathbf{T}$.
 
 \separate
 \begin{quote}
 ``By convention, we define $P(x | s(x))$ to be zero for all $x$ such that $s(x) \ne s_i$'' Be precise!  This statement is meaningless.  Do you mean ``we define $P(x | i) = 0$ whenever $s(x)\ne i$?''
 \end{quote}
 
-We've reworded this paragraph to be clearer. The text can be found right after Eq. (1) and is copied below:
-\begin{quote}
-With a discrete, non-overlapping state space, the likelihood of a sampled trajectory can be decomposed into a product of terms of two types: the state to state Markov transition probabilities, $T(s_i \rightarrow s_j) \equiv P(S_{t+1}=s_j | S_{t}=s_i)$, and so-called emission distributions of each state, $P(\mathbf{x} | s(\mathbf{x}))$, the conditional probability of observing a conformation at a given location in phase space given that the conformation, $\mathbf{x}$, is within a certain state, $s(\mathbf{x})$. As we are using  non-overlapping states, the conditional probability of observing a conformation, $\mathbf{x}$ from state $i$ is zero unless $\mathbf{x}$ is assigned to $i$. Mathematically, this means:
-$$ P(\mathbf{x} | i) = 0 \;\;\;\; \forall \mathbf{x} \textnormal{ s.t. } s(\mathbf{x}) \neq i$$
-\end{quote}
+We've reworded this paragraph to be clearer. The text can be found after Eq. (8), where we emphasize that the likelihood function introduced is valid only when
+
+\begin{equation}
+P(\mathbf{x} | i) = 0 \;\;\;\; \forall \; \mathbf{x} \textnormal{ s.t. } \sigma(\mathbf{x}) \neq i.
+\end{equation}
 
 \separate
 \begin{quote}
@@ -81,7 +83,11 @@ $$ P(\mathbf{x} | i) = 0 \;\;\;\; \forall \mathbf{x} \textnormal{ s.t. } s(\math
 \begin{quote}
 Eq. 3: Rewrite as $P(x|s)$ instead of $P(x_t|s(x_t))$, since these are supposed to be generative distributions for x given state index s.
 \end{quote}
-\hl{I'm not sure that this change is really all that necessary.}
+
+We've rewritten the emission distribution as
+\begin{equation}
+P(\mathbf{x} \;|\; i) = \frac{1}{V_i} \mathbf{1}_{s_i}(\mathbf{x}).
+\end{equation}
 
 \separate
 \begin{quote}
@@ -94,19 +100,22 @@ Eq. 3: Rewrite as $P(x|s)$ instead of $P(x_t|s(x_t))$, since these are supposed 
 
 \hl{This is one of the two major criticisms in the review so we should word the response carefully}
 
-When we first added this emission model, our goal was to provide something that might be used in more realistic cases. As the volume calculation makes the volume emission model impractical for all but the simplest cases, we wanted a model whose probabilities could be evaluated analytically. One simple first guess would be to use a gaussian distribution. However, the reviewer brings up several issues with this model that make it too imprecise to be used in practice. As such, we've moved all of the Gaussian emission model results / discussion to an appendix section. It is still useful to think about as it is a stepping stone to using ``fuzzy" clustering or other methods whose state emission distributions may overlap.
+When we first added this emission model, our goal was to provide a protocol that would be practical for practitioners to apply in high-dimensional settings. As the scaling of the volume calculation makes the volume emission model challenging except in low dimensions, we wanted a model whose probabilities could be evaluated analytically. One simple first guess would be to use a gaussian distribution. However, the reviewer brings up several issues with this model that make it too imprecise to be used in practice. As such, we've removed all of the Gaussian emission model from this work. Future work might be able to utilize this model as a tractable variational approximation to a hidden Markov model with Gaussian emission distributions.
 
 \begin{quote}
-On choice of emission probabilities, an obvious question: Why not choose $P(x|i) \propto exp[-\beta U(x)] \delta_{i,s(x)}$, where $U(x)$ is the potential energy and $\beta$ the inverse temperature?  The normalization constants are ALSO difficult to compute, but have the advantage that they are proportional to the stationary probability elements computed from the transition matrix $T$.
+On choice of emission probabilities, an obvious question: Why not choose $P(x|i) \propto \exp[-\beta U(x)] \delta_{i,s(x)}$, where $U(x)$ is the potential energy and $\beta$ the inverse temperature?  The normalization constants are ALSO difficult to compute, but have the advantage that they are proportional to the stationary probability elements computed from the transition matrix $T$.
 \end{quote}
 
-This is certainly one possibility, and is desirable because it is physically motivated. \hl{maybe add a discussion in the gaussian section?}
+This is certainly one possibility, and is desirable because of its physical motivation. Our interest, however, is primarily in statistical models for molecular dynamics data that makes use of the potential function only by way of MD trajectories, and doesn't require further calculation based on the forcefield.
+
+
 \separate
 \begin{quote}
 ``Unfortunately such approaches are intractable for problems of the size encountered in biomolecular simulations because of the need to integrate over all possible Markov models with a given number of parameters.''  Is this really intractable?  That's a very strong claim.  Perhaps it is just difficult or complex, since no evidence of intractability is presented?
 \end{quote}
-\hl{Is there some mathematical definition of intractability that I'm unaware of?}
-In order to compute the Bayes factor for selecting the number of states, we would need to sample all transition matrices that can be built in $k$ states. This is simply impractical as you need to integrate over all $k \times k$ transition matrices.  
+
+In order to compute the Bayes factor for selecting the number of states, we would need to integrate over the space of all crisp state decompositions $S$ with $|S|=k$ as well as the simplex of $k \times k$ reversible stochastic matrices. Although the second is possible analytically using the results of Diaconis and Rolles (2006), we're not aware of any practical methods for the former. To avoid confusion, we've replaced the word ``intractable'' with ``impractical''.
+
 
 \separate
 \begin{quote}
