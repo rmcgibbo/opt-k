@@ -31,26 +31,26 @@ Most critically, the manuscript does not clearly explain the described work, ful
 The title ``Optimal parameter selection...'' does not reflect the work contained in the paper, which focuses only on the selection of the number of states.  Should the authors wish to keep the general title, more work on selecting other kinds of parameters should be included; otherwise, the title should be amended to something like ``Optimal selection of the number of states... using a likelihood approach...''
 \end{quote}
 
-We agree with the reviewer, as our contribution focuses only on picking the number of states. To address this comment, we've changed the title to reflect this fact. Furthermore, we don't wish to make the suggestion that our model selection criteria are themselves optimal. They are merely one set of statistical tools from among many. For this reason, we've changed the title to ``Statistical Model Selection for Markov Models of Biomolecular Dynamics''.
+We agree with the reviewer, as our contribution focuses only on picking the number of states. To address this comment, we've changed the title to reflect this fact. Furthermore, we don't wish to make the suggestion that our model selection criteria are themselves optimal. They are merely one set of statistical tools from among many. For this reason, we've changed the title to ``Statistical Model Selection for Markov Models of Biomolecular Dynamics.''
 
 
 \separate
 \begin{quote}
-``As such, the eigenvalues, and correspondingly the relaxation timescales, should remain constant as the lag time increases.''  The eigenvalues of which matrix should remain constant with what parameter?  The eigenvalues of $T(t)$ actually change with t.  Perhaps you mean the eigenvalues of some implied rate matrix $K$ where $T(t) = exp[Kt]$?
+``As such, the eigenvalues, and correspondingly the relaxation timescales, should remain constant as the lag time increases.''  The eigenvalues of which matrix should remain constant with what parameter?  The eigenvalues of $T(t)$ actually change with t.  Perhaps you mean the eigenvalues of some implied rate matrix $K$ where $T(t) = \exp[Kt]$?
 \end{quote}
 
 \begin{quote}
 ``choosing models whose relaxation timescales have converged''  Give definition for ``relaxation timescales''.
 \end{quote}
 
-The reviewer is correct. We meant that the timescales will remain constant, but this means that the eigenvalues do change. We've added a much more detailed discussion of the background on MSMs including a discussion of the propagator. This text can be found in the section titled \emph{Theory.}
+The reviewer is correct. We meant that the timescales will remain constant, but this means that the eigenvalues do change. We've added a much more detailed discussion of the background on MSMs including a discussion of the propagator. This text can be found in the subsection titled \emph{Theory: Markov State Models}
 
 \separate
 \begin{quote}
 ``With s(x) as the function mapping conformations into the indicator function basis set" Unclear: do you mean s(x) is the integer index of the basis function that is nonzero (has support) at x?  Please be precise.  The lack of precision in this manuscript substantially hampers readability and comprehension.
 \end{quote}
 
-We were too casual with our notation, but had meant that $s(\cdot)$ maps a conformation in phase space to an integer corresponding to the index of the state in the Markov model. This has been reworded to read:
+We were too casual with our notation, but had meant that $s(\cdot)$ maps a conformation in phase space to an integer corresponding to the index of the state in the Markov model. We've changed this notation to $\sigma(\cdot)$, and reworded the relevant section to read:
 
 \begin{quote}
 A $k$-state Markov model is defined on a discrete set of states, $S = \{s_i\}_{i=1}^k$, where $s_i \subseteq \Omega$ and $\bigcup_{i=1}^k s_i = \Omega$. Furthermore, $s_i \cap s_j = \emptyset$ for all $i \neq j$. In words, every point in $\Omega$ is assigned to one (and only one) state in the MSM. Let $\sigma(\mathbf{x})$ be the function that maps a point $\mathbf{x} \in \Omega$ to the index $i$ of the state in $S$ such that $x \in s_i$.
@@ -59,10 +59,10 @@ A $k$-state Markov model is defined on a discrete set of states, $S = \{s_i\}_{i
 \separate
 
 \begin{quote}
-Eq. 1: This neglects a term for the initial conditions $x_0$.  Eq. 1 actually refers to the conditional probability $P[{x_t}|x_0]$.  Is this the quantity you intend to work with, rather than $P[{x_t}]$?  If so, why?
+Eq. 1: This neglects a term for the initial conditions $x_0$.  Eq. 1 actually refers to the conditional probability $P[{x_t}|x_1]$.  Is this the quantity you intend to work with, rather than $P[{x_t}]$?  If so, why?
 \end{quote}
 
-We have changed this, such that we work directly $P\big(\{\mathbf{x}_t\}_{t=1}^N\;\big|\; \{S, \mathbf{T}\}\big)d\mathbf{x}^N$ as opposed to the conditional distribution in our work. We do not, however, fit a separate starting probability distribution. Because our goal is to build models for equilibrium dynamics, we choose $P\big(\mathbf{x}_0 | \{S, T\}\big) = \pi_{\sigma(\mathbf{x}_0)} \; P(\mathbf{x}_0 | \sigma(\mathbf{x}_0))$ where $\pi$ the stationary distribution of $\mathbf{T}$.
+We have changed this, such that we work directly $P\big(\{\mathbf{x}_t\}_{t=1}^N\;\big|\; \{S, \mathbf{T}\}\big)d\mathbf{x}^N$ as opposed to the conditional distribution in our work. We do not, however, fit a separate starting probability distribution. Because our goal is to build models for equilibrium dynamics, we choose $P\big(\mathbf{x}_1 | \{S, T\}\big) = \pi_{\sigma(\mathbf{x}_1)} \; P(\mathbf{x}_1| \sigma(\mathbf{x}_1))$ where $\pi$ the stationary distribution of $\mathbf{T}$.
 
 \separate
 \begin{quote}
@@ -84,7 +84,7 @@ P(\mathbf{x} | i) = 0 \;\;\;\; \forall \; \mathbf{x} \textnormal{ s.t. } \sigma(
 Eq. 3: Rewrite as $P(x|s)$ instead of $P(x_t|s(x_t))$, since these are supposed to be generative distributions for x given state index s.
 \end{quote}
 
-We've rewritten the emission distribution as
+The reviewer's suggested notation is more clear. We've rewritten the emission distribution as
 \begin{equation}
 P(\mathbf{x} \;|\; i) = \frac{1}{V_i} \mathbf{1}_{s_i}(\mathbf{x}).
 \end{equation}
@@ -98,10 +98,9 @@ P(\mathbf{x} \;|\; i) = \frac{1}{V_i} \mathbf{1}_{s_i}(\mathbf{x}).
 ``We assume that the overlaps are small...''  Is this enforced by some condition on sigma and mu for neighboring states?  Has this assumption been checked?  This is certainly, absolutely, positively not the case for even the simple model in Fig 3A.
 \end{quote}
 
-\hl{This is one of the two major criticisms in the review so we should word the response carefully}
+When we first added this emission model, our goal was to provide a protocol that would be practical for practitioners to apply in high-dimensional settings. As the scaling of the volume calculation makes the volume emission model challenging except in low dimensions, we looked for an approximation whose probabilities could be evaluated analytically. One simple first guess would be to use a gaussian distribution. However, the reviewer brings up several issues with this model that make it too imprecise to be used in practice. As such, we've removed all of the Gaussian emission model from this work. Future work might be able to utilize this model as a tractable variational approximation to a hidden Markov model with Gaussian emission distributions.
 
-When we first added this emission model, our goal was to provide a protocol that would be practical for practitioners to apply in high-dimensional settings. As the scaling of the volume calculation makes the volume emission model challenging except in low dimensions, we wanted a model whose probabilities could be evaluated analytically. One simple first guess would be to use a gaussian distribution. However, the reviewer brings up several issues with this model that make it too imprecise to be used in practice. As such, we've removed all of the Gaussian emission model from this work. Future work might be able to utilize this model as a tractable variational approximation to a hidden Markov model with Gaussian emission distributions.
-
+\separate
 \begin{quote}
 On choice of emission probabilities, an obvious question: Why not choose $P(x|i) \propto \exp[-\beta U(x)] \delta_{i,s(x)}$, where $U(x)$ is the potential energy and $\beta$ the inverse temperature?  The normalization constants are ALSO difficult to compute, but have the advantage that they are proportional to the stationary probability elements computed from the transition matrix $T$.
 \end{quote}
@@ -122,14 +121,14 @@ In order to compute the Bayes factor for selecting the number of states, we woul
 ``N is the number of data points, assumed to be independent and identically distributed"  How reasonable is this assumption for molecular simulation data?  How do you even quantify the number of "iid normally distributed" data points in a molecular simulation?
 \end{quote}
 
-This is a subtle point, but is worth discussing. Since we are parameterizing a transition matrix, we choose the number of data points to be the number of transitions used to calculate the transition probabilities. However, as we are using the sliding window approach for counting transitions, we are in fact over-counting the number of identical transitions and so the BIC score is likely under-penalizing the models. This is a somewhat unanswered question in the field, however it has been discussed previously \cite{noe_sliding_window}. \hl{Do we want to add this to the main text?}.
+This is a subtle point, and we've added some clarification to the main text, both in the subsection titled \emph{Theory: Statistical Model Selection}, as well in the \emph{Methods} section. Since we are parameterizing a transition matrix, we choose the number of data points to be the number of transitions used to calculate the transition probabilities. However, as we are using the sliding window approach for counting transitions, we are in fact over-counting the number of identical transitions and so the BIC score is likely under-penalizing the models. This is a weakness of the BIC for correlated timeseries applications, and is also a concern when estimating the transition matrix and its uncertainty from the observed transition counts\cite{Prinz2011Markov}.
 
 \separate
 \begin{quote}
 ``For cross validation, we find it essential to use a prior...''  Give complete equation for log likelihood.  How do you initialize and sample posterior?  Or maximize likelihood?
 \end{quote}
 
-We are being very unsophisticated in our use of the likelihood as we are not actually optimizing this likelihood to build our models. We are simply using the likelihood to evaluate several models that are parameterized using the approach discussed in \cite{Beauchamp_msmb2}. The prior we mentioned in the original text was a prior used in the maximum likelihood estimator for a transition probability matrix given a state decomposition. 
+The prior refered to in the initial manuscript is in fact a psuedocount used during the estimation of $\mathbf{T}$. This is now clarified in the \emph{Methods} section.
 
 \separate
 \begin{quote}
