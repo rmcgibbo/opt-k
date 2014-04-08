@@ -189,7 +189,7 @@ $$
 $$ where $\zeta = 10^{-3}$, $kT = 15$, $R(t)$ is a delta-correlated Gaussian process with zero mean, and $V(\mathbf{x})$ was defined as
 $$
 V(\mathbf{x}) =  \sum_{j=1}^4 A_j \cdot \exp\Big(a_j (x_1-X_j)^2+b_j(x_1-X_j)(x_2-Y_j)+c_j(x_2-Y_j)^2\Big),
-$$ where $a = (-1, -1, -6.5, 0.7)$; $b = (0, 0, 11, 0.6)$; $c = (-10, -10, -6.5, 0.7)$; $A = (-200, -100, -170, 15)$; $X = (1, 0, -0.5, -1)$; $Y = (0, 0.5, 1.5, 1)$ as suggested by \citet{Muller1979Location}. Using the Euler-Maruyama method and a time step of $0.1$, we produced two trajectories of length $10^6$ time steps.
+$$ where $a = (-1, -1, -6.5, 0.7)$; $b = (0, 0, 11, 0.6)$; $c = (-10, -10, -6.5, 0.7)$; $A = (-200, -100, -170, 15)$; $X = (1, 0, -0.5, -1)$; $Y = (0, 0.5, 1.5, 1)$ as suggested by \citet{Muller1979Location}. Using the Euler-Maruyama method and a time step of $0.1$, we produced two trajectories of length $10^6$ time steps. The initial positions were sampled via a uniform distribution over the box: $[-1.5, 2.0] \times [-0.2, 2.0]$. 
 
 The first trajectory was clustered using the $k$-centers clustering algorithm with the Euclidean distance. State volumes were computed for the uniform emission model using $M=10^5$ rounds of Monte Carlo integration defining the set $A$ using the cluster centers from the 50-state model as the test points $Y$ with a cutoff of $R=0.28$. The second trajectory was used as a test set. All MSMs were built using a lag time of 30 steps.
 
