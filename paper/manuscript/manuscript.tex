@@ -138,7 +138,7 @@ Instead, we explore three alternative procedures for choosing the number of stat
 \begin{equation}
   \label{eq:aic}
   \mathrm{AIC} \equiv -2\cdot \ln L + \left(2\right) \cdot \kappa
-\end{equation} where $L$ is the maximum likelihood, $\kappa$ is the number of free parameters, and $N$ is the number of data points.  Model selection is performed by a minimization of the criterion. The BIC is derived based on the dominant terms in the Laplace approximation to the logarithm of the Bayes factor with a vague prior, while the functional form of the AIC comes from an asymptotic approximation to the Kullback-Leibler divergence between the model and the true distribution\cite{kass1995bayes, liddle2004many}. The appearance of number of data points $N$ in \cref{eq:bic} assumes that the data is independent and identically distributed given the model, which is often poorly justified for time series. Nonetheless, the value in the AIC and BIC comes from their simple form, that they do not require leaving out portions of the available data during fitting, and acceptable performance in practice\cite{Kuha01112004}.
+\end{equation} where $L$ is the maximum likelihood, $\kappa$ is the number of free parameters, and $N$ is the number of data points.  Model selection is performed by a minimization of the criterion. The BIC is derived based on the dominant terms in the Laplace approximation to the logarithm of the Bayes factor with a vague prior, while the functional form of the AIC comes from an asymptotic approximation to the Kullback-Leibler divergence between the model and the true distribution\cite{kass1995bayes,Liddle2007Information}. The appearance of number of data points $N$ in \cref{eq:bic} assumes that the data is independent and identically distributed given the model, which is often poorly justified for time series. Nonetheless, the value in the AIC and BIC comes from their simple form, that they do not require leaving out portions of the available data during fitting, and acceptable performance in practice\cite{Kuha01112004}.
 
 %\section{Prior Work}
 %Given a Markov model parameterized at a lag time of $\tau$, we can propagate ensembles of trajectories via the transition probability matrix:
@@ -237,10 +237,9 @@ As was the case with the M\"{u}ller MSMs, the log-likelihood of the training dat
 
 \begin{figure}
 \centering
-\label{fig:ww-tica}
 \includegraphics[width=6in]{figs/ww_tica.pdf}
 
-\caption{MSMs for the Fip35WW domain built with tICA were evaluated based on four model selection criteria. The log-likelihood was evaluated on the training set (black) and a separate test set (blue), and compared with the AIC (purple) and BIC (red) penalized log-likelihoods, computed on the training set. Dashed lines are used to indicate criterion-minimizing models. The models' ten slowest relaxation timescales (shown in the right panel) converge rapidly. }
+\caption{\label{fig:ww-tica} MSMs for the Fip35WW domain built with tICA were evaluated based on four model selection criteria. The log-likelihood was evaluated on the training set (black) and a separate test set (blue), and compared with the AIC (purple) and BIC (red) penalized log-likelihoods, computed on the training set. Dashed lines are used to indicate criterion-minimizing models. The models' ten slowest relaxation timescales (shown in the right panel) converge rapidly. }
 \end{figure}
 
 We also built a series of models on the same data set by replacing the tICA preprocessing with Principal Components Analysis (PCA). We projected the data set onto the top three principal components, which are the highest-variance uncorrelated linear combinations of the input degrees of freedom (see \emph{Methods}). Because PCA does not explicitly take into account the temporal structure of the data set, we expected that MSMs based on PCA would be less predictive than those based on tICA. Our results, shown in \cref{fig:ww-pca}, confirm this hypothesis. We built MSMs with as many as 25,000 states, and saw a linear trend in the longest relaxation timescale with respect to the number of states.
@@ -267,6 +266,11 @@ It is an honor and a pleasure to contribute this paper to the Swope Festschrift.
 \end{acknowledgement}
 
 \bibliography{bibliography}
+
+\begin{figure}
+\includegraphics{figs/toc.png}
+\caption{TOC figure}
+\end{figure}
 
 \end{document}
 
